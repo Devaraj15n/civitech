@@ -1,35 +1,91 @@
-const Sequelize = require('sequelize');
+const fs = require('fs');
+const path = require('path');
+const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
 const db = {};
 
-// Project domain
-db.Project = require('./project/project.model')(sequelize, Sequelize.DataTypes);
-db.BOQ = require('./project/boq.model')(sequelize, Sequelize.DataTypes);
-db.Task = require('./project/task.model')(sequelize, Sequelize.DataTypes);
+// Load all models dynamically
+fs.readdirSync(__dirname, { withFileTypes: true })
+  .filter(dirent => dirent.isDirectory())
+  .forEach(dirent => {
+    const folderPath = path.join(__dirname, dirent.name);
 
-// Master domain
-db.Party = require('./master/party.model')(sequelize, Sequelize.DataTypes);
-db.CostCode = require('./master/costCode.model')(sequelize, Sequelize.DataTypes);
+    fs.readdirSync(folderPath)
+      .filter(file => file.endsWith('.js'))
+      .forEach(file => {
+        const modelDef = require(path.join(folderPath, file));
+        const model = modelDef(sequelize, DataTypes);
+        db[model.name] = model;
+      });
+  });
 
-// Material domain
-db.Material = require('./material/material.model')(sequelize, Sequelize.DataTypes);
+/* ============================
+   Associations
+============================ */
 
-// ---------------- ASSOCIATIONS ----------------
+// PROJECT
+db.project_master.belongsTo(db.party_master, {
+  foreignKey: 'client_party_id',
+  as: 'client'
+});
+db.project_master.hasMany(db.boq_master, {
+  foreignKey: 'project_id',
+  as: 'boqs'
+});
 
-// Project → BOQ
-db.Project.hasMany(db.BOQ, { foreignKey: 'project_id' });
-db.BOQ.belongsTo(db.Project, { foreignKey: 'project_id' });
+// BOQ
+db.boq_master.belongsTo(db.project_master, {
+  foreignKey: 'project_id'
+});
+db.boq_master.hasMany(db.boq_item, {
+  foreignKey: 'boq_id',
+  as: 'items'
+});
 
-// Project → Task
-db.Project.hasMany(db.Task, { foreignKey: 'project_id' });
-db.Task.belongsTo(db.Project, { foreignKey: 'project_id' });
+// MATERIAL
+db.material_master.belongsTo(db.material_category_master, {
+  foreignKey: 'material_category_id',
+  as: 'category'
+});
 
-// BOQ → Cost Code
-db.CostCode.hasMany(db.BOQ, { foreignKey: 'cost_code_id' });
-db.BOQ.belongsTo(db.CostCode, { foreignKey: 'cost_code_id' });
+// WORKFORCE
+db.workforce_master.belongsTo(db.workforce_type_master, {
+  foreignKey: 'worker_type_id',
+  as: 'type'
+});
 
-// Export
+db.attendance.belongsTo(db.workforce_master, {
+  foreignKey: 'workforce_id',
+  as: 'worker'
+});
+
+db.attendance.belongsTo(db.project_master, {
+  foreignKey: 'project_id',
+  as: 'project'
+});
+
+// ASSET
+db.asset_master.belongsTo(db.asset_type_master, {
+  foreignKey: 'asset_type_id',
+  as: 'assetType'
+});
+
+// FINANCE
+db.finance_transaction.belongsTo(db.project_master, {
+  foreignKey: 'project_id',
+  as: 'project'
+});
+
+db.finance_transaction.belongsTo(db.party_master, {
+  foreignKey: 'party_id',
+  as: 'party'
+});
+
+/* ============================
+   Export
+============================ */
+
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
