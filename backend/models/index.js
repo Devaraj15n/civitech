@@ -1,7 +1,7 @@
-const sequelize = require('../config/config');
+const sequelize = require('../config/database');
 const fs = require('fs');
 const path = require('path');
-const { DataTypes } = require('sequelize');
+const {Sequelize, DataTypes } = require('sequelize');
 
 const db = {};
 

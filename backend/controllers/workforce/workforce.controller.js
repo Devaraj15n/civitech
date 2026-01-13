@@ -1,5 +1,5 @@
 const base = require('../base.controller');
-const service = require('../../services/workforce/workforce.service');
+const service = require('../../src/services/workforce/workforce.service');
 
 exports.create = base.create(service);
 exports.findAll = base.findAll(service);
