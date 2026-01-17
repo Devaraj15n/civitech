@@ -3,16 +3,6 @@ import { createTheme } from "@mui/material/styles";
 const theme = createTheme({
   typography: {
     fontFamily: `"Poppins", "Roboto", "Helvetica", "Arial", sans-serif`,
-
-    h5: {
-      fontWeight: 600
-    },
-    body1: {
-      fontWeight: 400
-    },
-    body2: {
-      fontWeight: 400
-    },
     button: {
       textTransform: "none",
       fontWeight: 500
@@ -20,6 +10,7 @@ const theme = createTheme({
   },
 
   components: {
+    /* ================= TEXT FIELD ================= */
     MuiTextField: {
       defaultProps: {
         variant: "outlined",
@@ -27,44 +18,75 @@ const theme = createTheme({
       }
     },
 
+    /* ================= INPUT ================= */
     MuiOutlinedInput: {
       styleOverrides: {
         root: {
           borderRadius: 8,
-          fontFamily: `"Poppins", sans-serif`
+          fontFamily: `"Poppins", sans-serif`,
+
+          "& .MuiOutlinedInput-notchedOutline": {
+            borderWidth: "0.7px"
+          },
+
+          "&:hover .MuiOutlinedInput-notchedOutline": {
+            borderWidth: "0.9px"
+          },
+
+          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+            borderWidth: "1px"
+          },
+
+          "&.Mui-error .MuiOutlinedInput-notchedOutline": {
+            borderWidth: "1px"
+          }
         },
+
         input: {
-          padding: "14px",
-          fontSize: "14px"
+          padding: "12px",
+          fontSize: "14px",          // ⬆ increased
+
+          "&::placeholder": {
+            fontSize: "13px",        // ⬆ increased
+            opacity: 0.6
+          }
         }
       }
     },
 
+    /* ================= LABEL ================= */
     MuiInputLabel: {
       styleOverrides: {
         root: {
           fontFamily: `"Poppins", sans-serif`,
-          fontSize: "14px"
+          fontSize: "13px",          // ⬆ increased
+          fontWeight: 500
+        },
+        shrink: {
+          fontSize: "12px"           // ⬆ increased
         }
       }
     },
 
+    /* ================= SELECT ================= */
     MuiSelect: {
       styleOverrides: {
         select: {
           fontFamily: `"Poppins", sans-serif`,
-          padding: "14px",
-          fontSize: "14px"
+          fontSize: "14px",          // ⬆ increased
+          padding: "12px"
         }
       }
     },
 
+    /* ================= BUTTON ================= */
     MuiButton: {
       styleOverrides: {
         root: {
           fontFamily: `"Poppins", sans-serif`,
           borderRadius: 8,
-          padding: "10px 16px"
+          padding: "10px 16px",
+          fontSize: "13px"
         }
       }
     }

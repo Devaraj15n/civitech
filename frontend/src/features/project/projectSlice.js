@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { fetchProjects, createProject } from "./projectThunk";
+import { fetchProjects, addProject } from "./projectThunk";
 
 const projectSlice = createSlice({
   name: "project",
@@ -13,10 +13,10 @@ const projectSlice = createSlice({
         state.loading = true;
       })
       .addCase(fetchProjects.fulfilled, (state, action) => {
-        state.loading = false;
         state.list = action.payload;
+        state.loading = false;
       })
-      .addCase(createProject.fulfilled, (state, action) => {
+      .addCase(addProject.fulfilled, (state, action) => {
         state.list.push(action.payload);
       });
   }

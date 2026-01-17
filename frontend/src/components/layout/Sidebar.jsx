@@ -46,20 +46,20 @@ const Sidebar = ({ onToggle }) => {
     const menuItems = [
         { text: "Dashboard", icon: <DashboardIcon />, path: "/dashboard" },
         { text: "Projects", icon: <WorkIcon />, path: "/projects" },
-        { text: "Timesheet", icon: <EventNoteIcon />, path: "/timesheet" },
-        { text: "MOM", icon: <AssignmentIcon />, path: "/mom" },
-        { text: "To Do", icon: <AssignmentIcon />, path: "/todo" },
-        { text: "Quotation", icon: <ShoppingCartIcon />, path: "/quotation" },
-        { text: "Finance", icon: <AccountBalanceIcon />, path: "/finance" },
-        { text: "Warehouse", icon: <StoreIcon />, path: "/warehouse" },
-        { text: "Chat Groups", icon: <ChatIcon />, path: "/chat-groups" },
-        { text: "Reports", icon: <BarChartIcon />, path: "/reports" },
-        { text: "Payroll", icon: <PaymentIcon />, path: "/payroll" },
-        { text: "Assets", icon: <EngineeringIcon />, path: "/assets" },
-        { text: "Services", icon: <BuildIcon />, path: "/services" },
+        // { text: "Timesheet", icon: <EventNoteIcon />, path: "/timesheet" },
+        // { text: "MOM", icon: <AssignmentIcon />, path: "/mom" },
+        // { text: "To Do", icon: <AssignmentIcon />, path: "/todo" },
+        // { text: "Quotation", icon: <ShoppingCartIcon />, path: "/quotation" },
+        // { text: "Finance", icon: <AccountBalanceIcon />, path: "/finance" },
+        // { text: "Warehouse", icon: <StoreIcon />, path: "/warehouse" },
+        // { text: "Chat Groups", icon: <ChatIcon />, path: "/chat-groups" },
+        // { text: "Reports", icon: <BarChartIcon />, path: "/reports" },
+        // { text: "Payroll", icon: <PaymentIcon />, path: "/payroll" },
+        // { text: "Assets", icon: <EngineeringIcon />, path: "/assets" },
+        // { text: "Services", icon: <BuildIcon />, path: "/services" },
         { text: "Library", icon: <LibraryBooksIcon />, path: "/library" },
-        { text: "Setting", icon: <SettingsIcon />, path: "/setting" },
-        { text: "Help", icon: <HelpOutlineIcon />, path: "/help" }
+        // { text: "Setting", icon: <SettingsIcon />, path: "/setting" },
+        // { text: "Help", icon: <HelpOutlineIcon />, path: "/help" }
     ];
 
     return (

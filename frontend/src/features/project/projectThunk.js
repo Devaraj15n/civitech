@@ -1,18 +1,18 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import api from "../../api/axios";
+import * as api from "./projectApi";
 
 export const fetchProjects = createAsyncThunk(
-  "project/fetchAll",
+  "project/fetch",
   async () => {
-    const res = await api.get("/projects");
+    const res = await api.getProjects();
     return res.data;
   }
 );
 
-export const createProject = createAsyncThunk(
-  "project/create",
+export const addProject = createAsyncThunk(
+  "project/add",
   async (data) => {
-    const res = await api.post("/projects", data);
+    const res = await api.createProject(data);
     return res.data;
   }
 );
