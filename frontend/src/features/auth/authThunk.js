@@ -3,8 +3,13 @@ import api from "../../api/axios";
 
 export const loginUser = createAsyncThunk(
   "auth/login",
-  async (payload) => {
-    const res = await api.post("/auth/login", payload);
-    return res.data;
+  async ({ phone, password }, { rejectWithValue }) => {
+    try {
+      const res = await api.post("/auth/login", { phone, password });
+      return res.data; // { token, user }
+    } catch (err) {
+      // Proper error handling
+      return rejectWithValue(err.response?.data || { message: "Login failed" });
+    }
   }
 );

@@ -14,6 +14,8 @@ app.use(morgan('dev'));
 
 app.use('/api', routes);
 app.use(errorMiddleware);
+console.log("TETS");
+
 
 
 db.sequelize.authenticate()

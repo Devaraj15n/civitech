@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
       client_code: {
         type: DataTypes.STRING(50),
         allowNull: false,
-        unique: true,
+        // unique: true,
         comment: "Unique client identifier / tenant code",
       },
 

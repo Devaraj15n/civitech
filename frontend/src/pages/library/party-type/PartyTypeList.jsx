@@ -1,13 +1,11 @@
 import { useEffect, useState } from "react";
 import MasterList from "../../../components/master/MasterList";
 import PartyTypeForm from "./PartyTypeForm";
-
-// TEMP MOCK DATA
-const mockData = [
-  { id: 1, party_type: "Vendor", status: 1 },
-  { id: 2, party_type: "Client", status: 1 },
-  { id: 3, party_type: "Labour Contractor", status: 1 }
-];
+import {
+  getPartyTypes,
+  createPartyType,
+  updatePartyType
+} from "../../../features/partyType/partyTypeApi";
 
 const PartyTypeList = () => {
   const [rows, setRows] = useState([]);
@@ -19,24 +17,43 @@ const PartyTypeList = () => {
     fetchData();
   }, []);
 
+  /* ================= FETCH ================= */
   const fetchData = async () => {
-    setLoading(true);
-    setRows(mockData);
-    setLoading(false);
+    try {
+      setLoading(true);
+      const res = await getPartyTypes();
+      
+      setRows(res.data?.data || []); // ✅ FIX
+    } catch (error) {
+      console.error("Failed to fetch party types", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSave = (data) => {
-    if (data.id) {
-      // UPDATE
-      setRows((prev) =>
-        prev.map((r) => (r.id === data.id ? data : r))
-      );
-    } else {
-      // CREATE
-      setRows((prev) => [
-        ...prev,
-        { ...data, id: Date.now(), status: 1 }
-      ]);
+  /* ================= SAVE ================= */
+  const handleSave = async (data) => {
+    try {
+      setLoading(true);
+
+      if (data.id) {
+        // UPDATE
+        await updatePartyType(data.id, {
+          party_type: data.party_type
+        });
+      } else {
+        // CREATE
+        await createPartyType({
+          party_type: data.party_type
+        });
+      }
+
+      setOpen(false);
+      fetchData(); // refresh list
+    } catch (error) {
+      console.error("Save failed", error);
+    } finally {
+      setLoading(false);
     }
   };
 

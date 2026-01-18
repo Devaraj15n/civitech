@@ -25,6 +25,9 @@ const MaterialLibraryForm = ({
   });
 
   useEffect(() => {
+
+    console.log(data);
+    
     if (data) {
       setForm(data);
     } else {

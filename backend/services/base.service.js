@@ -2,8 +2,10 @@ exports.create = (Model) => async (data) => {
     return Model.create(data);
 };
 
-exports.findAll = (Model) => async () => {
-    return Model.findAll();
+exports.findAll = (Model) => async (where = {}) => {
+  return await Model.findAll({
+    where,
+  });
 };
 
 exports.findById = (Model) => async (id) => {

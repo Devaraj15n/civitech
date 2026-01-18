@@ -1,15 +1,16 @@
 import { useState } from "react";
 import {
-    Drawer,
-    List,
-    ListItemButton,
-    ListItemText,
-    ListItemIcon,
-    Toolbar,
-    IconButton,
-    Typography,
-    Tooltip,
-    Box
+  Drawer,
+  List,
+  ListItemButton,
+  ListItemText,
+  ListItemIcon,
+  Toolbar,
+  IconButton,
+  Typography,
+  Tooltip,
+  Box,
+  Avatar
 } from "@mui/material";
 
 import MenuIcon from "@mui/icons-material/Menu";
@@ -34,137 +35,137 @@ import { useNavigate } from "react-router-dom";
 const EXPANDED_WIDTH = 240;
 const COLLAPSED_WIDTH = 72;
 
+const client = {
+  name: "Civi Tech",
+  logo: "/clients/client_1/logo/logo.png", // 👈 FROM PUBLIC FOLDER
+};
+
 const Sidebar = ({ onToggle }) => {
-    const navigate = useNavigate();
-    const [open, setOpen] = useState(true);
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(true);
 
-    const handleToggle = () => {
-        setOpen(!open);
-        onToggle?.(!open);
-    };
+  const handleToggle = () => {
+    setOpen(!open);
+    onToggle?.(!open);
+  };
 
-    const menuItems = [
-        { text: "Dashboard", icon: <DashboardIcon />, path: "/dashboard" },
-        { text: "Projects", icon: <WorkIcon />, path: "/projects" },
-        // { text: "Timesheet", icon: <EventNoteIcon />, path: "/timesheet" },
-        // { text: "MOM", icon: <AssignmentIcon />, path: "/mom" },
-        // { text: "To Do", icon: <AssignmentIcon />, path: "/todo" },
-        // { text: "Quotation", icon: <ShoppingCartIcon />, path: "/quotation" },
-        // { text: "Finance", icon: <AccountBalanceIcon />, path: "/finance" },
-        // { text: "Warehouse", icon: <StoreIcon />, path: "/warehouse" },
-        // { text: "Chat Groups", icon: <ChatIcon />, path: "/chat-groups" },
-        // { text: "Reports", icon: <BarChartIcon />, path: "/reports" },
-        // { text: "Payroll", icon: <PaymentIcon />, path: "/payroll" },
-        // { text: "Assets", icon: <EngineeringIcon />, path: "/assets" },
-        // { text: "Services", icon: <BuildIcon />, path: "/services" },
-        { text: "Library", icon: <LibraryBooksIcon />, path: "/library" },
-        // { text: "Setting", icon: <SettingsIcon />, path: "/setting" },
-        // { text: "Help", icon: <HelpOutlineIcon />, path: "/help" }
-    ];
+  const menuItems = [
+    { text: "Dashboard", icon: <DashboardIcon />, path: "/dashboard" },
+    { text: "Projects", icon: <WorkIcon />, path: "/projects" },
+    // { text: "Timesheet", icon: <EventNoteIcon />, path: "/timesheet" },
+    // { text: "MOM", icon: <AssignmentIcon />, path: "/mom" },
+    // { text: "To Do", icon: <AssignmentIcon />, path: "/todo" },
+    // { text: "Quotation", icon: <ShoppingCartIcon />, path: "/quotation" },
+    // { text: "Finance", icon: <AccountBalanceIcon />, path: "/finance" },
+    // { text: "Warehouse", icon: <StoreIcon />, path: "/warehouse" },
+    // { text: "Chat Groups", icon: <ChatIcon />, path: "/chat-groups" },
+    // { text: "Reports", icon: <BarChartIcon />, path: "/reports" },
+    // { text: "Payroll", icon: <PaymentIcon />, path: "/payroll" },
+    // { text: "Assets", icon: <EngineeringIcon />, path: "/assets" },
+    // { text: "Services", icon: <BuildIcon />, path: "/services" },
+    { text: "Library", icon: <LibraryBooksIcon />, path: "/library" },
+    // { text: "Setting", icon: <SettingsIcon />, path: "/setting" },
+    // { text: "Help", icon: <HelpOutlineIcon />, path: "/help" }
+  ];
 
-    return (
-        <Drawer
-            variant="permanent"
+  return (
+    <Drawer
+      variant="permanent"
+      sx={{
+        width: open ? EXPANDED_WIDTH : COLLAPSED_WIDTH,
+        flexShrink: 0,
+        whiteSpace: "nowrap",
+        "& .MuiDrawer-paper": {
+          width: open ? EXPANDED_WIDTH : COLLAPSED_WIDTH,
+          boxSizing: "border-box",
+          overflowX: "hidden",
+          transition: "width 0.3s ease",
+          backgroundColor: "#190c4f",
+          color: "#ffffff",
+        },
+      }}
+    >
+      {/* Logo + Toggle */}
+      {/* LOGO SECTION */}
+      <Toolbar
+        sx={{
+          display: "flex",
+          justifyContent: open ? "space-between" : "center",
+          px: 2,
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Avatar
+            src={client.logo}
+            alt={client.name}
             sx={{
-                width: open ? EXPANDED_WIDTH : COLLAPSED_WIDTH,
-                flexShrink: 0,
-                whiteSpace: "nowrap",
-                "& .MuiDrawer-paper": {
-                    width: open ? EXPANDED_WIDTH : COLLAPSED_WIDTH,
-                    boxSizing: "border-box",
-                    overflowX: "hidden",
-                    transition: "width 0.3s ease",
-                    backgroundColor: "#190c4f",
-                    color: "#ffffff"
-                }
+              width: open ? 42 : 32,
+              height: open ? 42 : 32,
+              bgcolor: "#ffffff33",
             }}
-        >
-            {/* Logo + Toggle */}
-            <Toolbar
-                sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: open ? "space-between" : "center",
-                    px: 2,
-                    py: 1.5
-                }}
+          >
+            {client.name.charAt(0)}
+          </Avatar>
+
+          {open && (
+            <Typography variant="h6" fontWeight={600} noWrap>
+              {client.name}
+            </Typography>
+          )}
+        </Box>
+
+        <IconButton onClick={handleToggle} sx={{ color: "#fff" }}>
+          <MenuIcon />
+        </IconButton>
+      </Toolbar>
+
+      {/* Menu Items */}
+      <List>
+        {menuItems.map((item) => (
+          <Tooltip
+            key={item.text}
+            title={!open ? item.text : ""}
+            placement="right"
+          >
+            <ListItemButton
+              onClick={() => navigate(item.path)}
+              sx={{
+                justifyContent: open ? "flex-start" : "center",
+                px: 2.5,
+                color: "#ffffff",
+                "&:hover": { backgroundColor: "rgba(255,255,255,0.12)" },
+              }}
             >
-                {open && (
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                        {/* Optional logo icon */}
-                        <Box
-                            component="span"
-                            sx={{
-                                width: 32,
-                                height: 32,
-                                mr: 1,
-                                bgcolor: "#ffffff33",
-                                borderRadius: 1
-                            }}
-                        />
-                        <Typography
-                            variant="h6"
-                            fontWeight={600}
-                            color="inherit"
-                            sx={{ lineHeight: 1 }}
-                        >
-                            Civi Tech
-                        </Typography>
-                    </Box>
-                )}
+              <ListItemIcon
+                sx={{
+                  minWidth: 0,
+                  mr: open ? 2 : "auto",
+                  justifyContent: "center",
+                  color: "#ffffff",
+                  display: "flex",
+                  alignItems: "center",
+                  "& .MuiSvgIcon-root": { fontSize: "1.3rem" },
+                }}
+              >
+                {item.icon}
+              </ListItemIcon>
 
-                <IconButton sx={{ color: "#ffffff" }} onClick={handleToggle}>
-                    <MenuIcon />
-                </IconButton>
-            </Toolbar>
-
-            {/* Menu Items */}
-            <List>
-                {menuItems.map((item) => (
-                    <Tooltip
-                        key={item.text}
-                        title={!open ? item.text : ""}
-                        placement="right"
-                    >
-                        <ListItemButton
-                            onClick={() => navigate(item.path)}
-                            sx={{
-                                justifyContent: open ? "flex-start" : "center",
-                                px: 2.5,
-                                color: "#ffffff",
-                                "&:hover": { backgroundColor: "rgba(255,255,255,0.12)" }
-                            }}
-                        >
-                            <ListItemIcon
-                                sx={{
-                                    minWidth: 0,
-                                    mr: open ? 2 : "auto",
-                                    justifyContent: "center",
-                                    color: "#ffffff",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    "& .MuiSvgIcon-root": { fontSize: "1.3rem" }
-                                }}
-                            >
-                                {item.icon}
-                            </ListItemIcon>
-
-                            {open && (
-                                <ListItemText
-                                    primary={item.text}
-                                    primaryTypographyProps={{
-                                        fontSize: "0.85rem",
-                                        fontWeight: 300,
-                                        lineHeight: 1.2
-                                    }}
-                                />
-                            )}
-                        </ListItemButton>
-                    </Tooltip>
-                ))}
-            </List>
-        </Drawer>
-    );
+              {open && (
+                <ListItemText
+                  primary={item.text}
+                  primaryTypographyProps={{
+                    fontSize: "0.85rem",
+                    fontWeight: 300,
+                    lineHeight: 1.2,
+                  }}
+                />
+              )}
+            </ListItemButton>
+          </Tooltip>
+        ))}
+      </List>
+    </Drawer>
+  );
 };
 
 export default Sidebar;

@@ -13,11 +13,11 @@ const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <ThemeProvider theme={theme}>
     <CssBaseline />
-    {/* <Provider store={store}> */}
+    <Provider store={store}>
       <BrowserRouter>
         <App />
       </BrowserRouter>
-    {/* </Provider> */}
+    </Provider>
   </ThemeProvider>
 
 );

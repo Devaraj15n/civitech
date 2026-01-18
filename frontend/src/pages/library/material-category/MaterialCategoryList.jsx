@@ -1,80 +1,109 @@
 import { useEffect, useState } from "react";
 import MasterList from "../../../components/master/MasterList";
 import MaterialCategoryForm from "./MaterialCategoryForm";
-
-// TEMP API MOCK (replace with real API)
-const mockData = [
-    { id: 1, category_name: "ASIAN PAINTS", description: "", status: 1 },
-    { id: 2, category_name: "CONSTRUCTION MATERIALS", description: "", status: 1 }
-];
+import {
+  getMaterialCategories,
+  createMaterialCategory,
+  updateMaterialCategory
+} from "../../../features/materialCategory/materialCategoryApi";
 
 const MaterialCategoryList = () => {
-    const [rows, setRows] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [open, setOpen] = useState(false);
-    const [editData, setEditData] = useState(null);
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [editData, setEditData] = useState(null);
 
-    useEffect(() => {
-        fetchData();
-    }, []);
+  useEffect(() => {
+    fetchData();
+  }, []);
 
-    const fetchData = async () => {
-        setLoading(true);
-        // API CALL HERE
-        setRows(mockData);
-        setLoading(false);
-    };
+  /* ================= FETCH ================= */
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const res = await getMaterialCategories();
 
-    const handleSave = (data) => {
-        if (data.id) {
-            // UPDATE
-            setRows((prev) =>
-                prev.map((r) => (r.id === data.id ? data : r))
-            );
-        } else {
-            // CREATE
-            setRows((prev) => [
-                ...prev,
-                { ...data, id: Date.now() }
-            ]);
-        }
-    };
+      console.log(res.data);
+      
+      setRows(res.data?.data || []);
+    } catch (error) {
+      console.error("Failed to fetch material categories", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    return (
-        <>
-            <MasterList
-                title="Material Category Master"
-                columns={[
-                    { field: "category_name", headerName: "Category Name", flex: 1 },
-                    { field: "description", headerName: "Description", flex: 1 },
-                    {
-                        field: "status",
-                        headerName: "Status",
-                        width: 120,
-                        renderCell: (params) =>
-                            params.row?.status === 1 ? "Active" : "Inactive"
-                    }
-                ]}
-                rows={rows}
-                loading={loading}
-                onAdd={() => {
-                    setEditData(null);
-                    setOpen(true);
-                }}
-                onEdit={(row) => {
-                    setEditData(row);
-                    setOpen(true);
-                }}
-            />
+  /* ================= SAVE ================= */
+  const handleSave = async (data) => {
+    try {
+      setLoading(true);
 
-            <MaterialCategoryForm
-                open={open}
-                data={editData}
-                onClose={() => setOpen(false)}
-                onSave={handleSave}
-            />
-        </>
-    );
+      if (data.id) {
+        // UPDATE
+        await updateMaterialCategory(data.id, {
+          category_name: data.category_name,
+          description: data.description
+        });
+      } else {
+        // CREATE
+        await createMaterialCategory({
+          category_name: data.category_name,
+          description: data.description
+        });
+      }
+
+      setOpen(false);
+      fetchData();
+    } catch (error) {
+      console.error("Save failed", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <>
+      <MasterList
+        title="Material Category Master"
+        columns={[
+          {
+            field: "category_name",
+            headerName: "Category Name",
+            flex: 1
+          },
+          {
+            field: "description",
+            headerName: "Description",
+            flex: 1
+          },
+          {
+            field: "status",
+            headerName: "Status",
+            width: 120,
+            renderCell: (params) =>
+              params.row?.status === 1 ? "Active" : "Inactive"
+          }
+        ]}
+        rows={rows}
+        loading={loading}
+        onAdd={() => {
+          setEditData(null);
+          setOpen(true);
+        }}
+        onEdit={(row) => {
+          setEditData(row);
+          setOpen(true);
+        }}
+      />
+
+      <MaterialCategoryForm
+        open={open}
+        data={editData}
+        onClose={() => setOpen(false)}
+        onSave={handleSave}
+      />
+    </>
+  );
 };
 
 export default MaterialCategoryList;

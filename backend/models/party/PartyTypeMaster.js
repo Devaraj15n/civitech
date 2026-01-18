@@ -32,15 +32,15 @@ module.exports = (sequelize, DataTypes) => {
       tableName: "party_type_master",
       timestamps: true,
       paranoid: true,
-      deletedAt: "deleted_at",
+      deletedAt: "deleted_at"
 
-      indexes: [
-        {
-          unique: true,
-          fields: ["party_type", "client_id"],
-          name: "uq_party_type_client",
-        },
-      ],
+      // indexes: [
+      //   {
+      //     unique: true,
+      //     fields: ["party_type", "client_id"],
+      //     name: "uq_party_type_client",
+      //   },
+      // ],
     }
   );
 
