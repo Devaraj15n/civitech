@@ -3,7 +3,7 @@ import ProjectDetails from "./index/ProjectDetails";
 
 import ProjectOverview from "./overview/ProjectOverview";
 import BoqList from "./boq/ProjectBOQ";
-import TaskList from "./task/ProjectTasks";
+import TaskList from "./task/index/ProjectTasks";
 import ProgressTracking from "./progress/ProjectProgress";
 import MaterialTransactions from "./material/ProjectMaterials";
 

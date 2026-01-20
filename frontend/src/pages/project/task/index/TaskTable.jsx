@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 
 import TaskRow from "./TaskRow";
-import ProgressDrawer from "./progress/ProgressDrawer";
+import ProgressDrawer from "../progress/ProgressDrawer";
 
 /* Dummy Data */
 const tasks = [

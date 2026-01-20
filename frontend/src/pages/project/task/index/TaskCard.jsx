@@ -6,7 +6,7 @@ import {
   Divider,
   Button
 } from "@mui/material";
-import SubTaskList from "./SubTaskList";
+import SubTaskList from "../SubTaskList";
 
 const statusColor = {
   Pending: "warning",

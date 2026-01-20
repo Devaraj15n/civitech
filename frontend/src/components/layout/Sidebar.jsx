@@ -37,7 +37,7 @@ const COLLAPSED_WIDTH = 72;
 
 const client = {
   name: "Civi Tech",
-  logo: "/clients/client_1/logo/logo.png", // 👈 FROM PUBLIC FOLDER
+  logo: "/clients/client_1/logo/logo.jpg", // 👈 FROM PUBLIC FOLDER
 };
 
 const Sidebar = ({ onToggle }) => {
