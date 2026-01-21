@@ -16,5 +16,14 @@ router.use("/materials", require("./master/material-master.routes"));
 
 // router.use('/workforce', require('./workforce.routes'));
 
+router.use("/cost-codes", require("./master/cost-code.routes"));
+router.use("/rates", require("./master/rate.routes"));
+router.use("/workforce-types", require("./master/workforce-type.routes"));
+router.use("/workforce", require("./master/workforce.routes"));
+router.use("/deductions", require("./master/deduction.routes"));
+router.use("/retentions", require("./master/retention.routes"));
+router.use("/progress", require("./master/progress.routes"));
+
+
 
 module.exports = router;
