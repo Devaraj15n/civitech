@@ -18,7 +18,7 @@ module.exports = {
         client_id: client.id,
         username: `admin_${client.client_code}`, // unique username
         email: data.email,                       // can use client email
-        phone: data.phone,                       
+        phone: data.phone,
         password_hash,
         user_type: 'CLIENT_ADMIN',
         status: 1
