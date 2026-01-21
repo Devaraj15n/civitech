@@ -5,14 +5,15 @@ import {
   TableRow,
   TableCell,
   TableBody,
-  Paper
+  Paper,
 } from "@mui/material";
 
 import TaskRow from "./TaskRow";
 import ProgressDrawer from "../progress/ProgressDrawer";
+import TaskDrawer from "../drawer/TaskDrawer";
 
 /* Dummy Data */
-const tasks = [
+const initialTasks = [
   {
     id: 1,
     name: "TEST",
@@ -23,18 +24,28 @@ const tasks = [
         id: 11,
         name: "Construction",
         duration: "20 days",
-        progress: 0
-      }
-    ]
-  }
+        progress: 0,
+      },
+    ],
+  },
 ];
 
 export default function TaskTable() {
+  const [tasks] = useState(initialTasks);
   const [openProgress, setOpenProgress] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
 
-  const handleOpenProgress = (task) => {
-    setSelectedTask(task);
+  const [openSubTaskDrawer, setOpenSubTaskDrawer] = useState(false);
+  const [parentTask, setParentTask] = useState(null);
+
+  const handleAddSubTaskClick = (task) => {
+    setParentTask(task);
+    setOpenSubTaskDrawer(true);
+  };
+
+  /* 🔑 OPEN PROGRESS DRAWER (TASK / SUBTASK) */
+  const handleOpenProgress = (taskOrSubTask) => {
+    setSelectedTask(taskOrSubTask);
     setOpenProgress(true);
   };
 
@@ -68,6 +79,7 @@ export default function TaskTable() {
                 task={task}
                 index={index + 1}
                 onOpenProgress={handleOpenProgress}
+                onAddSubTaskClick={handleAddSubTaskClick}
               />
             ))}
           </TableBody>
@@ -79,6 +91,11 @@ export default function TaskTable() {
         open={openProgress}
         onClose={handleCloseProgress}
         task={selectedTask}
+      />
+      <TaskDrawer
+        open={openSubTaskDrawer}
+        onClose={() => setOpenSubTaskDrawer(false)}
+        parentTask={parentTask}
       />
     </>
   );

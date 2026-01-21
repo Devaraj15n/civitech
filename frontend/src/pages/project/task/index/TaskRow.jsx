@@ -1,19 +1,34 @@
+import { useState } from "react";
 import {
   TableRow,
   TableCell,
   IconButton,
   Chip,
-  Box
+  Box,
+  Menu,
+  MenuItem,
+  Button,
 } from "@mui/material";
 
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 
-export default function TaskRow({ task, index, onOpenProgress }) {
+export default function TaskRow({
+  task,
+  index,
+  onOpenProgress,
+  onAddSubTaskClick,
+}) {
+  const [anchorEl, setAnchorEl] = useState(null);
+  const openMenu = Boolean(anchorEl);
+
+  const handleMenuOpen = (e) => setAnchorEl(e.currentTarget);
+  const handleMenuClose = () => setAnchorEl(null);
+
   return (
     <>
-      {/* Parent Task */}
+      {/* ================= PARENT TASK ================= */}
       <TableRow>
         <TableCell>{index}</TableCell>
 
@@ -28,21 +43,46 @@ export default function TaskRow({ task, index, onOpenProgress }) {
         <TableCell>-</TableCell>
         <TableCell>-</TableCell>
 
-        <TableCell>
+        {/* PROGRESS + CHAT */}
+        {/* PROGRESS + CHAT */}
+        <TableCell sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <Chip label={`${task.progress} %`} size="small" color="info" />
+
+          {/* 💬 Show chat ONLY if no subtasks */}
+          {task.children.length === 0 && (
+            <IconButton
+              size="small"
+              color="primary"
+              onClick={() => onOpenProgress(task)}
+            >
+              <ChatBubbleOutlineIcon fontSize="small" />
+            </IconButton>
+          )}
         </TableCell>
 
         <TableCell>-</TableCell>
         <TableCell>-</TableCell>
 
+        {/* EDIT MENU */}
         <TableCell>
-          <IconButton>
+          <IconButton onClick={handleMenuOpen}>
             <MoreVertIcon />
           </IconButton>
+
+          <Menu anchorEl={anchorEl} open={openMenu} onClose={handleMenuClose}>
+            <MenuItem
+              onClick={() => {
+                handleMenuClose();
+                onAddSubTaskClick(task);
+              }}
+            >
+              + Add Subtask
+            </MenuItem>
+          </Menu>
         </TableCell>
       </TableRow>
 
-      {/* Sub Tasks */}
+      {/* ================= SUB TASKS ================= */}
       {task.children.map((sub, i) => (
         <TableRow key={sub.id}>
           <TableCell>
@@ -56,16 +96,19 @@ export default function TaskRow({ task, index, onOpenProgress }) {
           <TableCell>-</TableCell>
 
           <TableCell sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Chip
-              label={`${sub.progress} / 100 %`}
-              size="small"
-              variant="outlined"
-            />
+            <Chip label={`${sub.progress} %`} size="small" variant="outlined" />
 
+            {/* SUB TASK CHAT */}
             <IconButton
               size="small"
               color="primary"
-              onClick={() => onOpenProgress(sub)}
+              onClick={() =>
+                onOpenProgress({
+                  ...sub,
+                  parentTaskId: task.id,
+                  parentTaskName: task.name,
+                })
+              }
             >
               <ChatBubbleOutlineIcon fontSize="small" />
             </IconButton>
@@ -75,7 +118,7 @@ export default function TaskRow({ task, index, onOpenProgress }) {
           <TableCell>-</TableCell>
 
           <TableCell>
-            <IconButton>
+            <IconButton size="small">
               <MoreVertIcon />
             </IconButton>
           </TableCell>
