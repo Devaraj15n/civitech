@@ -1,5 +1,3 @@
-const { update } = require("../../controllers/base.controller");
-
 module.exports = (sequelize, DataTypes) => {
     const CostCode = sequelize.define(
         "cost_code_master",
@@ -35,11 +33,26 @@ module.exports = (sequelize, DataTypes) => {
                 allowNull: false,
             },
 
-            description: DataTypes.TEXT,
+            description: {
+                type: DataTypes.TEXT,
+                allowNull: true,
+            },
 
             status: {
                 type: DataTypes.TINYINT,
                 defaultValue: 1,
+            },
+
+            created_by: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                comment: "Client user id who created the record",
+            },
+
+            updated_by: {
+                type: DataTypes.INTEGER,
+                allowNull: true,
+                comment: "Client user id who last updated the record",
             },
         },
         {
@@ -51,12 +64,10 @@ module.exports = (sequelize, DataTypes) => {
     );
 
     CostCode.associate = (models) => {
-        // Client relation
         CostCode.belongsTo(models.client_master, {
             foreignKey: "client_id",
         });
 
-        // Self reference
         CostCode.belongsTo(models.cost_code_master, {
             foreignKey: "parent_cost_code_id",
             as: "parentCostCode",

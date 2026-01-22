@@ -30,11 +30,10 @@ exports.remove = (Model) => async (id) => {
 
     if (!record) throw new Error("Record not found");
 
-    await record.destroy();        // This will set deleted_at automatically
+    // await record.destroy();        // This will set deleted_at automatically
     await record.update({ status: 0 });  // Update status
 
     return { success: true, message: "Deleted successfully" };
 };
-
 
 

@@ -18,7 +18,15 @@ module.exports = {
 
         return base.create(WorkforceType)({
             client_id: user.client_id,
-            ...data,
+
+            worker_type: data.worker_type,
+            employment_type: data.employment_type,
+            salary_per_hour: data.salary_per_hour,
+            status: data.status ?? 1,
+
+            // ✅ audit
+            created_by: user.client_id,
+            updated_by: user.client_id,
         });
     },
 
@@ -32,19 +40,26 @@ module.exports = {
     findById: base.findById(WorkforceType),
 
     update: async (id, data, user) => {
-        const existing = await WorkforceType.findOne({
-            where: {
-                client_id: user.client_id,
-                worker_type: data.worker_type,
-                id: { [Sequelize.Op.ne]: id },
-            },
-        });
 
-        if (existing) {
-            throw new Error(`Worker type '${data.worker_type}' already exists`);
+        if (data.worker_type) {
+            const existing = await WorkforceType.findOne({
+                where: {
+                    client_id: user.client_id,
+                    worker_type: data.worker_type,
+                    id: { [Sequelize.Op.ne]: id },
+                    status: 1,
+                },
+            });
+
+            if (existing) {
+                throw new Error(`Worker type '${data.worker_type}' already exists`);
+            }
         }
 
-        return base.update(WorkforceType)(id, data);
+        return base.update(WorkforceType)(id, {
+            ...data,
+            updated_by: user.client_id, // ✅ audit
+        });
     },
 
     remove: base.remove(WorkforceType),
