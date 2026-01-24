@@ -7,62 +7,83 @@ module.exports = (sequelize, DataTypes) => {
                 primaryKey: true,
                 autoIncrement: true,
             },
+
             client_id: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
             },
+
             item_name: {
                 type: DataTypes.STRING(150),
                 allowNull: false,
             },
+
             item_code: {
                 type: DataTypes.STRING(50),
                 allowNull: false,
             },
+
             unit: {
                 type: DataTypes.STRING(50),
                 allowNull: false,
             },
+
             gst_percentage: {
                 type: DataTypes.DECIMAL(5, 2),
                 defaultValue: 0.0,
             },
+
             cost_component: {
-                type: DataTypes.ENUM(
-                    "Material",
-                    "Labour",
-                    "Equipment"
-                ),
+                type: DataTypes.ENUM("Material", "Labour", "Equipment"),
                 allowNull: false,
             },
+
             unit_cost_price: {
                 type: DataTypes.DECIMAL(10, 2),
                 allowNull: false,
             },
+
             markup_percentage: {
                 type: DataTypes.DECIMAL(5, 2),
                 defaultValue: 0.0,
             },
+
             additional_fees: {
                 type: DataTypes.DECIMAL(10, 2),
                 defaultValue: 0.0,
             },
+
             unit_sale_price: {
                 type: DataTypes.DECIMAL(10, 2),
                 allowNull: false,
             },
+
+            status: {
+                type: DataTypes.TINYINT,
+                defaultValue: 1,
+            },
+
+            created_by: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                comment: "Client user id who created the record",
+            },
+
+            updated_by: {
+                type: DataTypes.INTEGER,
+                allowNull: true,
+                comment: "Client user id who last updated the record",
+            },
         },
         {
             tableName: "rate_master",
-            timestamps: true,   // createdAt & updatedAt
+            timestamps: true,
             createdAt: "created_at",
-            updatedAt: false,   // since only created_at exists
+            updatedAt: "updated_at",
         }
     );
 
     Rate.associate = (models) => {
-        // No FK mentioned currently
-        // Can be linked later with material/workforce/equipment tables if needed
         Rate.belongsTo(models.client_master, {
             foreignKey: "client_id",
         });
