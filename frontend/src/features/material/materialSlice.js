@@ -58,39 +58,52 @@ const materialSlice = createSlice({
   },
   reducers: {},
   extraReducers: (builder) => {
-    builder
-      /* FETCH */
-      .addCase(fetchMaterials.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(fetchMaterials.fulfilled, (state, action) => {
-        state.list = action.payload;
-        state.loading = false;
-      })
-      .addCase(fetchMaterials.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+  builder
+    /* ================= FETCH ================= */
+    .addCase(fetchMaterials.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    })
+    .addCase(fetchMaterials.fulfilled, (state, action) => {
+      state.list = action.payload;
+      state.loading = false;
+    })
+    .addCase(fetchMaterials.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    })
 
-      /* SAVE */
-      .addCase(saveMaterial.fulfilled, (state, action) => {
-        const index = state.list.findIndex(
-          (m) => m.id === action.payload.id
-        );
-        if (index >= 0) {
-          state.list[index] = action.payload;
-        } else {
-          state.list.push(action.payload);
-        }
-      })
+    /* ================= SAVE ================= */
+    .addCase(saveMaterial.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    })
+    .addCase(saveMaterial.fulfilled, (state, action) => {
+      state.loading = false;
+      const index = state.list.findIndex(
+        (m) => m.id === action.payload.id
+      );
+      if (index >= 0) {
+        state.list[index] = action.payload;
+      } else {
+        state.list.push(action.payload);
+      }
+    })
+    .addCase(saveMaterial.rejected, (state, action) => {
+      state.loading = false;
+      state.error =
+        action.payload?.message ||
+        action.payload ||
+        "Material already exists";
+    })
 
-      /* DELETE */
-      .addCase(removeMaterial.fulfilled, (state, action) => {
-        state.list = state.list.filter(
-          (m) => m.id !== action.payload
-        );
-      });
-  },
+    /* ================= DELETE ================= */
+    .addCase(removeMaterial.fulfilled, (state, action) => {
+      state.list = state.list.filter(
+        (m) => m.id !== action.payload
+      );
+    });
+},
 });
 
 export default materialSlice.reducer;

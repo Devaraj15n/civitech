@@ -1,0 +1,64 @@
+/* ===============================
+   Base Corporate Toast
+================================ */
+.corp-toast {
+  background-color: #ffffff !important;
+  color: #1f2937; /* neutral dark */
+  border-radius: 6px;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: "Inter", "Roboto", system-ui, -apple-system, sans-serif;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  border-left: 4px solid transparent;
+  min-height: auto;
+}
+
+/* Body */
+.corp-toast-body {
+  margin: 0;
+  padding: 0;
+  line-height: 1.45;
+  display: flex;
+  align-items: center;
+}
+
+/* ===============================
+   Status Indicators
+================================ */
+.Toastify__toast--success {
+  border-left-color: #2e7d32; /* corporate green */
+}
+
+.Toastify__toast--error {
+  border-left-color: #d32f2f; /* corporate red */
+}
+
+.Toastify__toast--info {
+  border-left-color: #0288d1; /* corporate blue */
+}
+
+.Toastify__toast--warning {
+  border-left-color: #ed6c02; /* corporate orange */
+}
+
+/* ===============================
+   Close Button (Subtle)
+================================ */
+.Toastify__close-button {
+  color: #6b7280;
+  opacity: 0.45;
+  transition: opacity 0.2s ease;
+}
+
+.Toastify__close-button:hover {
+  opacity: 1;
+}
+
+/* ===============================
+   Container spacing (Bottom Right)
+================================ */
+.Toastify__toast-container--bottom-right {
+  bottom: 24px;
+  right: 24px;
+}

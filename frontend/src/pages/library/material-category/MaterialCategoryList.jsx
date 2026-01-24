@@ -4,8 +4,9 @@ import MaterialCategoryForm from "./MaterialCategoryForm";
 import {
   getMaterialCategories,
   createMaterialCategory,
-  updateMaterialCategory
+  updateMaterialCategory,
 } from "../../../features/materialCategory/materialCategoryApi";
+import { showSuccess, showError } from "../../../utils/toastHelper";
 
 const MaterialCategoryList = () => {
   const [rows, setRows] = useState([]);
@@ -24,7 +25,7 @@ const MaterialCategoryList = () => {
       const res = await getMaterialCategories();
 
       console.log(res.data);
-      
+
       setRows(res.data?.data || []);
     } catch (error) {
       console.error("Failed to fetch material categories", error);
@@ -38,24 +39,37 @@ const MaterialCategoryList = () => {
     try {
       setLoading(true);
 
+      let res;
+
       if (data.id) {
         // UPDATE
-        await updateMaterialCategory(data.id, {
+        res = await updateMaterialCategory(data.id, {
           category_name: data.category_name,
-          description: data.description
+          description: data.description,
+          status: data.status,
         });
       } else {
         // CREATE
-        await createMaterialCategory({
+        res = await createMaterialCategory({
           category_name: data.category_name,
-          description: data.description
+          description: data.description,
+          status: data.status,
         });
       }
+
+      // ✅ Corporate success toast
+      showSuccess(
+        res,
+        data.id
+          ? "Material Category updated successfully"
+          : "Material Category created successfully"
+      );
 
       setOpen(false);
       fetchData();
     } catch (error) {
-      console.error("Save failed", error);
+      // ❌ Corporate error toast
+      showError(error);
     } finally {
       setLoading(false);
     }
@@ -69,20 +83,20 @@ const MaterialCategoryList = () => {
           {
             field: "category_name",
             headerName: "Category Name",
-            flex: 1
+            flex: 1,
           },
           {
             field: "description",
             headerName: "Description",
-            flex: 1
+            flex: 1,
           },
           {
             field: "status",
             headerName: "Status",
             width: 120,
             renderCell: (params) =>
-              params.row?.status === 1 ? "Active" : "Inactive"
-          }
+              params.row?.status === 1 ? "Active" : "Inactive",
+          },
         ]}
         rows={rows}
         loading={loading}

@@ -4,8 +4,10 @@ import PartyTypeForm from "./PartyTypeForm";
 import {
   getPartyTypes,
   createPartyType,
-  updatePartyType
+  updatePartyType,
 } from "../../../features/partyType/partyTypeApi";
+import { showSuccess, showError } from "../../../utils/toastHelper";
+
 
 const PartyTypeList = () => {
   const [rows, setRows] = useState([]);
@@ -22,7 +24,7 @@ const PartyTypeList = () => {
     try {
       setLoading(true);
       const res = await getPartyTypes();
-      
+
       setRows(res.data?.data || []); // ✅ FIX
     } catch (error) {
       console.error("Failed to fetch party types", error);
@@ -33,29 +35,34 @@ const PartyTypeList = () => {
 
   /* ================= SAVE ================= */
   const handleSave = async (data) => {
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      if (data.id) {
-        // UPDATE
-        await updatePartyType(data.id, {
-          party_type: data.party_type
-        });
-      } else {
-        // CREATE
-        await createPartyType({
-          party_type: data.party_type
-        });
-      }
+    let res;
 
-      setOpen(false);
-      fetchData(); // refresh list
-    } catch (error) {
-      console.error("Save failed", error);
-    } finally {
-      setLoading(false);
+    if (data.id) {
+      res = await updatePartyType(data.id, {
+        party_type: data.party_type,
+        status: data.status,
+      });
+    } else {
+      res = await createPartyType({
+        party_type: data.party_type,
+        status: data.status,
+      });
     }
-  };
+
+    showSuccess(res, "Saved successfully");
+
+    setOpen(false);
+    fetchData();
+  } catch (error) {
+    showError(error);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <>
@@ -65,15 +72,15 @@ const PartyTypeList = () => {
           {
             field: "party_type",
             headerName: "Party Type",
-            flex: 1
+            flex: 1,
           },
           {
             field: "status",
             headerName: "Status",
             width: 120,
             renderCell: (params) =>
-              params.row?.status === 1 ? "Active" : "Inactive"
-          }
+              params.row?.status === 1 ? "Active" : "Inactive",
+          },
         ]}
         rows={rows}
         loading={loading}

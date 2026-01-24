@@ -55,7 +55,7 @@ const MasterList = ({
           onChange={(e) => setSearch(e.target.value)}
         />
 
-        <TextField
+        {/* <TextField
           size="small"
           select
           label="Status"
@@ -66,7 +66,7 @@ const MasterList = ({
           <MenuItem value="">All</MenuItem>
           <MenuItem value="1">Active</MenuItem>
           <MenuItem value="0">Inactive</MenuItem>
-        </TextField>
+        </TextField> */}
       </Box>
 
       {/* Grid */}

@@ -18,15 +18,22 @@ import PartyLibraryList from "../pages/library/party/PartyLibraryList";
 import CostCodeList from "../pages/library/cost-code/CostCodeList";
 import RateMasterList from "../pages/library/rate/RateMasterList";
 
+// Auth Guard
+import ProtectedRoute from "./ProtectedRoute";
+
 export default function AppRoutes() {
   const routes = useRoutes([
     {
       path: "/",
-      element: <Login />
+      element: <Login />,
     },
     {
       path: "/",
-      element: <DashboardLayout />,
+      element: (
+        <ProtectedRoute>
+          <DashboardLayout />
+        </ProtectedRoute>
+      ),
       children: [
         { path: "dashboard", element: <Dashboard /> },
 
@@ -35,8 +42,8 @@ export default function AppRoutes() {
           path: "projects",
           children: [
             { index: true, element: <ProjectList /> },
-            { path: "add", element: <ProjectAdd /> }
-          ]
+            { path: "add", element: <ProjectAdd /> },
+          ],
         },
 
         // 🔥 PROJECT DETAILS (MODULE ROUTE)
@@ -53,11 +60,11 @@ export default function AppRoutes() {
             { path: "materials", element: <MaterialLibraryList /> },
             { path: "parties", element: <PartyLibraryList /> },
             { path: "cost-codes", element: <CostCodeList /> },
-            { path: "rates", element: <RateMasterList /> }
-          ]
-        }
-      ]
-    }
+            { path: "rates", element: <RateMasterList /> },
+          ],
+        },
+      ],
+    },
   ]);
 
   return routes;

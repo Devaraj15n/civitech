@@ -23,8 +23,14 @@ const MaterialLibraryList = () => {
   }, [dispatch]);
 
   const handleSave = async (data) => {
-    await dispatch(saveMaterial(data));
-    setOpen(false);
+    try {
+      await dispatch(saveMaterial(data)).unwrap();
+      setOpen(false); // ✅ close only if success
+    } catch (err) {
+      // ❌ duplicate / validation error comes here
+      console.error(err);
+      // show toast or alert here
+    }
   };
 
   return (

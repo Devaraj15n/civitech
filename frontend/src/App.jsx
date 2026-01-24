@@ -1,6 +1,7 @@
 import AppRoutes from "./routes/AppRoutes";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import "./assets/css/toast.css";
 
 export default function App() {
   return (
@@ -8,16 +9,16 @@ export default function App() {
       <AppRoutes />
       {/* Global Toast Container */}
       <ToastContainer
-        position="top-right"
-        autoClose={3000} // auto hide after 3 seconds
-        hideProgressBar={false}
-        newestOnTop={false}
+        position="bottom-right"
+        autoClose={4000}
+        hideProgressBar={true}
+        newestOnTop
         closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
         pauseOnHover
-        theme="colored" // optional, matches Material-UI
+        draggable={false}
+        theme="light"
+        toastClassName="corp-toast"
+        bodyClassName="corp-toast-body"
       />
     </>
   );

@@ -1,4 +1,4 @@
-const service = require("../../services/master/material-category.service");
+const service = require("../../services/master/material-master.service");
 const base = require('../base.controller');
 
 
