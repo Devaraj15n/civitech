@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Table,
   TableHead,
@@ -6,44 +6,34 @@ import {
   TableCell,
   TableBody,
   Paper,
+  CircularProgress,
 } from "@mui/material";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchTasks } from "../../../../features/projects/tasks/taskSlice";
 
 import TaskRow from "./TaskRow";
 import ProgressDrawer from "../progress/ProgressDrawer";
 import TaskDrawer from "../drawer/TaskDrawer";
 
-/* Dummy Data */
-const initialTasks = [
-  {
-    id: 1,
-    name: "TEST",
-    duration: "20 days",
-    progress: 0,
-    children: [
-      {
-        id: 11,
-        name: "Construction",
-        duration: "20 days",
-        progress: 0,
-      },
-    ],
-  },
-];
+export default function TaskTable({ projectId }) {
+  const dispatch = useDispatch();
+  const { list: tasks = [], loading } = useSelector((s) => s.projectTask);
 
-export default function TaskTable() {
-  const [tasks] = useState(initialTasks);
   const [openProgress, setOpenProgress] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
 
   const [openSubTaskDrawer, setOpenSubTaskDrawer] = useState(false);
   const [parentTask, setParentTask] = useState(null);
 
+  useEffect(() => {
+    if (projectId) dispatch(fetchTasks(projectId));
+  }, [dispatch, projectId]);
+
   const handleAddSubTaskClick = (task) => {
     setParentTask(task);
     setOpenSubTaskDrawer(true);
   };
 
-  /* 🔑 OPEN PROGRESS DRAWER (TASK / SUBTASK) */
   const handleOpenProgress = (taskOrSubTask) => {
     setSelectedTask(taskOrSubTask);
     setOpenProgress(true);
@@ -53,6 +43,12 @@ export default function TaskTable() {
     setOpenProgress(false);
     setSelectedTask(null);
   };
+
+  if (loading) return <CircularProgress />;
+
+  console.log("projectId+++++++++");
+  console.log(projectId);
+  
 
   return (
     <>
@@ -86,16 +82,18 @@ export default function TaskTable() {
         </Table>
       </Paper>
 
-      {/* RIGHT SIDE PROGRESS DRAWER */}
       <ProgressDrawer
         open={openProgress}
         onClose={handleCloseProgress}
         task={selectedTask}
       />
+
       <TaskDrawer
         open={openSubTaskDrawer}
         onClose={() => setOpenSubTaskDrawer(false)}
         parentTask={parentTask}
+        projectId={projectId} // <-- pass it here
+        editData={selectedTask}
       />
     </>
   );

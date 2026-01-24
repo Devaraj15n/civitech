@@ -10,12 +10,15 @@ export const showSuccess = (res, fallback = "Success") => {
   toast.success(res?.data?.message || fallback, config);
 };
 
-/* Error */
+/* ❌ Error (RTK + Axios safe) */
 export const showError = (err, fallback = "Something went wrong") => {
-  toast.error(
-    err?.response?.data?.message || fallback,
-    config
-  );
+  const message =
+    err?.response?.data?.message || // Axios error
+    err?.data?.message ||           // RTK rejectWithValue
+    err?.message ||                 // RTK unwrap()
+    fallback;
+
+  toast.error(message, config);
 };
 
 export const showInfo = (msg) => toast.info(msg, config);

@@ -1,93 +1,155 @@
-import { Card, Typography, Grid, Chip, Divider } from "@mui/material";
-
-/* ---- Dummy Project Data (UI only) ---- */
-const project = {
-  project_code: "PRJ-001",
-  project_name: "Metro Rail Construction",
-  client: "ABC Infra Pvt Ltd",
-  status: "Ongoing",
-  start_date: "2024-01-10",
-  end_date: "2025-06-30",
-  project_value: "₹ 125,00,00,000",
-  project_address: "MG Road, Bangalore",
-  orientation: "East - West",
-  dimension: "2.5 Km Length",
-  attendance_radius: "200 meters"
-};
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  Box,
+  Typography,
+  Grid,
+  Paper,
+  Chip,
+  LinearProgress,
+  Divider,
+  CircularProgress,
+  Stack,
+} from "@mui/material";
+import { fetchProjects } from "../../../features/projects/projectSlice";
+import { useParams } from "react-router-dom";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import AssessmentIcon from "@mui/icons-material/Assessment";
 
 const statusColor = {
   Planning: "warning",
   Ongoing: "info",
   Completed: "success",
-  Hold: "error"
+  Hold: "error",
 };
 
 export default function ProjectOverview() {
+  const dispatch = useDispatch();
+  const { id } = useParams();
+  const { list: projects = [], loading } = useSelector((s) => s.project);
+
+  useEffect(() => {
+    if (!projects.length) dispatch(fetchProjects());
+  }, [dispatch, projects.length]);
+
+  const project = projects.find((p) => p.id === Number(id));
+
+  if (loading) return <CircularProgress />;
+
+  if (!project) return <Typography>No project found!</Typography>;
+
+  const progress =
+    project.project_status === "Completed"
+      ? 100
+      : project.project_status === "Ongoing"
+      ? 60
+      : 0;
+
   return (
-    <Grid container spacing={2}>
-      {/* Project Summary */}
-      <Grid  size={{ xs: 12, md: 6 }}>
-        <Card sx={{ p: 2, height: "100%" }}>
-          <Typography variant="h6" gutterBottom>
-            Project Summary
-          </Typography>
-          <Divider sx={{ mb: 2 }} />
+    <Box sx={{ p: 4 }}>
+      <Typography variant="h4" fontWeight={700} mb={3}>
+        Project Overview
+      </Typography>
 
-          <Typography><b>Project Code:</b> {project.project_code}</Typography>
-          <Typography><b>Project Name:</b> {project.project_name}</Typography>
-          <Typography><b>Client:</b> {project.client}</Typography>
-
-          <Chip
-            label={project.status}
-            color={statusColor[project.status]}
-            size="small"
-            sx={{ mt: 1 }}
-          />
-        </Card>
+      {/* ---- KPI Cards ---- */}
+      <Grid container spacing={3} mb={3} alignItems="stretch">
+        {[
+          {
+            title: "Status",
+            icon: <AccessTimeIcon color="primary" />,
+            content: (
+              <Chip
+                label={project.project_status}
+                color={statusColor[project.project_status]}
+                size="small"
+                sx={{ mt: 1 }}
+              />
+            ),
+            borderColor: "#1976d2",
+          },
+          {
+            title: "Project Value",
+            icon: <MonetizationOnIcon color="success" />,
+            content: (
+              <Typography variant="h6" color="primary" mt={1}>
+                {project.project_value
+                  ? `₹ ${Number(project.project_value).toLocaleString()}`
+                  : "N/A"}
+              </Typography>
+            ),
+            borderColor: "#4caf50",
+          },
+          {
+            title: "Address",
+            icon: <LocationOnIcon color="warning" />,
+            content: <Typography mt={1}>{project.project_address || "N/A"}</Typography>,
+            borderColor: "#f57c00",
+          },
+          {
+            title: "Progress",
+            icon: <AssessmentIcon color="secondary" />,
+            content: (
+              <>
+                <LinearProgress
+                  variant="determinate"
+                  value={progress}
+                  sx={{ mt: 1, height: 10, borderRadius: 5 }}
+                />
+                <Typography variant="body2" mt={1}>
+                  {progress}%
+                </Typography>
+              </>
+            ),
+            borderColor: "#9c27b0",
+          },
+        ].map((card, index) => (
+          <Grid item size ={{xs:12, sm:6, md:3}} key={index}>
+            <Paper
+              elevation={3}
+              sx={{ p: 3, borderLeft: `5px solid ${card.borderColor}`, height: "100%" }}
+            >
+              <Stack direction="row" alignItems="center" spacing={1}>
+                {card.icon}
+                <Typography variant="subtitle1" fontWeight={600}>
+                  {card.title}
+                </Typography>
+              </Stack>
+              {card.content}
+            </Paper>
+          </Grid>
+        ))}
       </Grid>
 
-      {/* Timeline */}
-      <Grid  size={{ xs: 12, md: 3 }}>
-        <Card sx={{ p: 2, height: "100%" }}>
-          <Typography variant="h6" gutterBottom>
-            Timeline
-          </Typography>
-          <Divider sx={{ mb: 2 }} />
+      {/* ---- Detailed Info ---- */}
+      <Grid container spacing={3} alignItems="stretch">
+        <Grid item size={{xs:12, md:6}}>
+          <Paper elevation={3} sx={{ p: 3, height: "100%" }}>
+            <Typography variant="h6" mb={2}>
+              Project Details
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+            <Typography><b>Project Code:</b> {project.project_code}</Typography>
+            <Typography><b>Project Name:</b> {project.project_name}</Typography>
+            <Typography><b>Client:</b> {project.client_name || "N/A"}</Typography>
+            <Typography><b>Start Date:</b> {project.start_date}</Typography>
+            <Typography><b>End Date:</b> {project.end_date}</Typography>
+          </Paper>
+        </Grid>
 
-          <Typography><b>Start Date:</b> {project.start_date}</Typography>
-          <Typography><b>End Date:</b> {project.end_date}</Typography>
-        </Card>
+        <Grid item size={{xs:12, md:6}}>
+          <Paper elevation={3} sx={{ p: 3, height: "100%" }}>
+            <Typography variant="h6" mb={2}>
+              Site Details
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+            <Typography><b>Orientation:</b> {project.orientation || "N/A"}</Typography>
+            <Typography><b>Dimension:</b> {project.dimension || "N/A"}</Typography>
+            <Typography><b>Attendance Radius:</b> {project.attendance_radius || "N/A"}</Typography>
+          </Paper>
+        </Grid>
       </Grid>
-
-      {/* Financials */}
-      <Grid  size={{ xs: 12, md: 3 }}>
-        <Card sx={{ p: 2, height: "100%" }}>
-          <Typography variant="h6" gutterBottom>
-            Financials
-          </Typography>
-          <Divider sx={{ mb: 2 }} />
-
-          <Typography><b>Project Value:</b></Typography>
-          <Typography color="primary" fontWeight={600}>
-            {project.project_value}
-          </Typography>
-        </Card>
-      </Grid>
-
-      {/* Site Details */}
-      <Grid  size={{ xs: 12 }}>
-        <Card sx={{ p: 2 }}>
-          <Typography variant="h6" gutterBottom>
-            Site Details
-          </Typography>
-          <Divider sx={{ mb: 2 }} />
-
-          <Typography><b>Address:</b> {project.project_address}</Typography>
-          <Typography><b>Orientation:</b> {project.orientation}</Typography>
-          <Typography><b>Dimension:</b> {project.dimension}</Typography>
-          <Typography><b>Attendance Radius:</b> {project.attendance_radius}</Typography>
-        </Card>
-      </Grid>
-    </Grid>
+    </Box>
   );
 }

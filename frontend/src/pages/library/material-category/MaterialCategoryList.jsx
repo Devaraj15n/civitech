@@ -5,7 +5,7 @@ import {
   getMaterialCategories,
   createMaterialCategory,
   updateMaterialCategory,
-} from "../../../features/materialCategory/materialCategoryApi";
+} from "../../../features/masters/materialCategory/materialCategoryApi";
 import { showSuccess, showError } from "../../../utils/toastHelper";
 
 const MaterialCategoryList = () => {

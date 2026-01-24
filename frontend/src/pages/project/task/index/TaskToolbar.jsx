@@ -10,7 +10,7 @@ export default function TaskToolbar({onAddTask}) {
     <Box
       display="flex"
       alignItems="end"
-      justifyContent="space-between"
+      justifyContent="end"
       mb={2}
       gap={2}
     >

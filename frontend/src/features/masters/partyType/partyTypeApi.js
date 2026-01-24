@@ -1,4 +1,4 @@
-import api from "../../api/axios"; // adjust path if needed
+import api from "../../../api/axios"; // adjust path if needed
 
 export const getPartyTypes = () => {
   return api.get("/party-types");

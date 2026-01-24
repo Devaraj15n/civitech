@@ -9,32 +9,37 @@ import {
   Grid
 } from "@mui/material";
 import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 
-const CostCodeForm = ({
-  open,
-  data,
-  rows,
-  onClose,
-  onSave
-}) => {
+const CostCodeForm = ({ open, data, rows, onClose, onSave }) => {
+  const { user } = useSelector((s) => s.auth || {}); // For client_id, created_by
+
   const [form, setForm] = useState({
     cost_code: "",
     name: "",
     parent_cost_code_id: "",
-    cost_component: "",
+    cost_component: "Material",
     description: "",
     status: 1
   });
 
+  // Initialize form for edit/add
   useEffect(() => {
     if (data) {
-      setForm(data);
+      setForm({
+        ...data,
+        parent_cost_code_id: data.parent_cost_code_id
+          ? String(data.parent_cost_code_id)
+          : "",
+        cost_component: data.cost_component || "Material",
+        status: data.status ?? 1
+      });
     } else {
       setForm({
         cost_code: "",
         name: "",
         parent_cost_code_id: "",
-        cost_component: "",
+        cost_component: "Material",
         description: "",
         status: 1
       });
@@ -42,26 +47,26 @@ const CostCodeForm = ({
   }, [data]);
 
   const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value
-    });
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = () => {
     onSave({
       ...form,
-      parent_cost_code_id:
-        form.parent_cost_code_id || null
+      client_id: user?.client_id || 1,
+      created_by: user?.id || 1,
+      updated_by: user?.id || 1,
+      parent_cost_code_id: form.parent_cost_code_id
+        ? Number(form.parent_cost_code_id)
+        : null,
+      status: Number(form.status)
     });
     onClose();
   };
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
-      <DialogTitle>
-        {data ? "Edit Cost Code" : "Add Cost Code"}
-      </DialogTitle>
+      <DialogTitle>{data ? "Edit Cost Code" : "Add Cost Code"}</DialogTitle>
 
       <DialogContent dividers>
         <Grid container spacing={2}>

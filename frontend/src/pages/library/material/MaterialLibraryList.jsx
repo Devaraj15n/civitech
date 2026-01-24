@@ -5,8 +5,9 @@ import MaterialLibraryForm from "./MaterialLibraryForm";
 import {
   fetchMaterials,
   saveMaterial,
-} from "../../../features/material/materialSlice";
-import { fetchMaterialCategories } from "../../../features/materialCategory/materialCategorySlice";
+} from "../../../features/masters/material/materialSlice";
+import { fetchMaterialCategories } from "../../../features/masters/materialCategory/materialCategorySlice";
+import { showSuccess, showError } from "../../../utils/toastHelper";
 
 const MaterialLibraryList = () => {
   const dispatch = useDispatch();
@@ -24,12 +25,22 @@ const MaterialLibraryList = () => {
 
   const handleSave = async (data) => {
     try {
-      await dispatch(saveMaterial(data)).unwrap();
-      setOpen(false); // ✅ close only if success
+      const res = await dispatch(saveMaterial(data)).unwrap();
+
+      // ✅ Corporate success toast
+      showSuccess({
+        data: {
+          message: data.id
+            ? "Material updated successfully"
+            : "Material created successfully",
+        },
+      });
+
+      setOpen(false); // close only on success
+      dispatch(fetchMaterials()); // refresh list (optional but best)
     } catch (err) {
-      // ❌ duplicate / validation error comes here
-      console.error(err);
-      // show toast or alert here
+      // ❌ Backend duplicate / validation error
+      showError(err);
     }
   };
 
@@ -41,14 +52,20 @@ const MaterialLibraryList = () => {
         loading={loading}
         columns={[
           {
-            field: "category_name",
-            headerName: "Category Name",
+            field: "material_name",
+            headerName: "Material Name",
             flex: 1,
           },
           {
-            field: "description",
-            headerName: "Description",
+            field: "material_category_id",
+            headerName: "Category",
             flex: 1,
+            renderCell: ({ row }) => {
+              const category = categories.find(
+                (c) => c.id === row.material_category_id
+              );
+              return category?.category_name || "-";
+            },
           },
           {
             field: "status",

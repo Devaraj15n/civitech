@@ -1,54 +1,81 @@
-import { Box, Card, Typography, Button, Chip, IconButton } from "@mui/material";
-
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  Box,
+  Card,
+  Typography,
+  Button,
+  Chip,
+  IconButton,
+  Drawer,
+} from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+
+import ProjectForm from "./ProjectForm";
+import {
+  fetchProjects,
+  deleteProject,
+  saveProject,
+} from "../../../features/projects/projectSlice";
+import { showSuccess, showError } from "../../../utils/toastHelper";
 import { useNavigate } from "react-router-dom";
 
 export default function ProjectList() {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { list: rows = [], loading } = useSelector((s) => s.project);
 
-  /* ---- Dummy Data ---- */
-  const rows = [
-    {
-      id: 1,
-      project_code: "PRJ-001",
-      project_name: "Metro Rail Construction",
-      status: "ONGOING",
-    },
-    {
-      id: 2,
-      project_code: "PRJ-002",
-      project_name: "Highway Expansion",
-      status: "COMPLETED",
-    },
-    {
-      id: 3,
-      project_code: "PRJ-003",
-      project_name: "Commercial Complex",
-      status: "DELAYED",
-    },
-  ];
+  const [open, setOpen] = useState(false);
+  const [editData, setEditData] = useState(null);
+
+  useEffect(() => {
+    dispatch(fetchProjects());
+  }, [dispatch]);
 
   const statusColor = {
-    ONGOING: "info",
-    COMPLETED: "success",
-    DELAYED: "error",
+    Planning: "info",
+    Ongoing: "info",
+    Completed: "success",
+    Hold: "warning",
   };
+
+  // ✅ Handle save from ProjectForm
+  const handleSave = async (data) => {
+    try {
+      await dispatch(saveProject(data)).unwrap();
+
+      showSuccess({
+        data: { message: data.id ? "Project updated successfully" : "Project created successfully" },
+      });
+
+      setOpen(false);
+      setEditData(null);
+
+      dispatch(fetchProjects()); // 🔁 refresh table
+    } catch (err) {
+      showError(err);
+    }
+  };
+
+  // ✅ Handle delete
+  // const handleDelete = async (id) => {
+  //   try {
+  //     await dispatch(deleteProject(id)).unwrap();
+
+  //     showSuccess({ data: { message: "Project deleted successfully" } });
+  //     dispatch(fetchProjects());
+  //   } catch (err) {
+  //     showError(err);
+  //   }
+  // };
+
   const columns = [
+    { field: "project_code", headerName: "Code", flex: 1 },
+    { field: "project_name", headerName: "Project Name", flex: 2 },
     {
-      field: "project_code",
-      headerName: "Code",
-      flex: 1,
-    },
-    {
-      field: "project_name",
-      headerName: "Project Name",
-      flex: 2,
-    },
-    {
-      field: "status",
+      field: "project_status",
       headerName: "Status",
       flex: 1,
       renderCell: (params) => (
@@ -72,6 +99,21 @@ export default function ProjectList() {
           >
             <VisibilityIcon />
           </IconButton>
+          <IconButton
+            color="primary"
+            onClick={() => {
+              setEditData(params.row);
+              setOpen(true);
+            }}
+          >
+            <EditIcon />
+          </IconButton>
+          {/* <IconButton
+            color="error"
+            onClick={() => handleDelete(params.row.id)}
+          >
+            Delete
+          </IconButton> */}
         </>
       ),
     },
@@ -82,14 +124,19 @@ export default function ProjectList() {
       <Box
         display="flex"
         justifyContent="space-between"
-        alignItems="center"
         mb={2}
+        alignItems="center"
       >
         <Typography variant="h5" fontWeight={600}>
           Projects
         </Typography>
-
-        <Button variant="contained" onClick={() => navigate("/projects/add")}>
+        <Button
+          variant="contained"
+          onClick={() => {
+            setEditData(null);
+            setOpen(true);
+          }}
+        >
           + Add Project
         </Button>
       </Box>
@@ -100,13 +147,32 @@ export default function ProjectList() {
           columns={columns}
           pageSizeOptions={[5, 10, 20]}
           initialState={{
-            pagination: {
-              paginationModel: { pageSize: 5, page: 0 },
-            },
+            pagination: { paginationModel: { pageSize: 5, page: 0 } },
           }}
+          loading={loading}
           disableRowSelectionOnClick
         />
       </Card>
+
+      {/* Drawer Form */}
+      <Drawer
+        anchor="right"
+        open={open}
+        onClose={() => {
+          setOpen(false);
+          setEditData(null);
+        }}
+        PaperProps={{ sx: { width: 500 } }}
+      >
+        <ProjectForm
+          data={editData}
+          onClose={() => {
+            setOpen(false);
+            setEditData(null);
+          }}
+          onSave={handleSave} // 🔑 corporate save pattern
+        />
+      </Drawer>
     </Box>
   );
 }

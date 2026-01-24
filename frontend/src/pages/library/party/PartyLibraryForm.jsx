@@ -10,6 +10,16 @@ import {
 } from "@mui/material";
 import { useEffect, useState } from "react";
 
+const EMPTY_FORM = {
+  id: null,
+  party_name: "",
+  party_type_id: "",
+  mobile: "",
+  email: "",
+  gst_no: "",
+  status: 1
+};
+
 const PartyLibraryForm = ({
   open,
   data,
@@ -17,51 +27,58 @@ const PartyLibraryForm = ({
   onClose,
   onSave
 }) => {
-  const [form, setForm] = useState({
-    party_name: "",
-    party_type_id: "",
-    mobile: "",
-    email: "",
-    gst_no: "",
-    status: 1
-  });
+  const [form, setForm] = useState(EMPTY_FORM);
 
+  /* ✅ FIX: map API → form + depend on open */
   useEffect(() => {
-    if (data) {
-      setForm(data);
-    } else {
+    if (open && data) {
       setForm({
-        party_name: "",
-        party_type_id: "",
-        mobile: "",
-        email: "",
-        gst_no: "",
-        status: 1
+        id: data.id,
+        party_name: data.party_name || "",
+        party_type_id: Number(data.party_type_id),
+        mobile: data.phone || "",
+        email: data.email || "",
+        gst_no: data.gst_number || "",
+        status: Number(data.status ?? 1)
       });
     }
-  }, [data]);
+
+    if (open && !data) {
+      setForm(EMPTY_FORM);
+    }
+  }, [data, open]);
 
   const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value
-    });
+    const { name, value } = e.target;
+
+    setForm((prev) => ({
+      ...prev,
+      [name]:
+        name === "party_type_id" || name === "status"
+          ? Number(value)
+          : value
+    }));
   };
 
   const handleSubmit = () => {
-    onSave(form);
-    onClose();
+    onSave(form); // ❌ don't close here
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth="md"
+      key={form.id || "add"} // ✅ force refresh
+    >
       <DialogTitle>
-        {data ? "Edit Party" : "Add Party"}
+        {form.id ? "Edit Party" : "Add Party"}
       </DialogTitle>
 
       <DialogContent dividers>
         <Grid container spacing={2}>
-          <Grid item size={12} md={6}>
+          <Grid  size={{xs:12 ,md:6}}>
             <TextField
               fullWidth
               label="Party Name"
@@ -72,7 +89,7 @@ const PartyLibraryForm = ({
             />
           </Grid>
 
-          <Grid item size={12} md={6}>
+          <Grid  size={{xs:12 ,md:6}}>
             <TextField
               select
               fullWidth
@@ -90,7 +107,7 @@ const PartyLibraryForm = ({
             </TextField>
           </Grid>
 
-          <Grid item size={12} md={6}>
+          <Grid  size={{xs:12 ,md:6}}>
             <TextField
               fullWidth
               label="Mobile"
@@ -101,7 +118,7 @@ const PartyLibraryForm = ({
             />
           </Grid>
 
-          <Grid item size={12} md={6}>
+          <Grid  size={{xs:12 ,md:6}}>
             <TextField
               fullWidth
               label="Email"
@@ -111,7 +128,7 @@ const PartyLibraryForm = ({
             />
           </Grid>
 
-          <Grid item size={12} md={6}>
+          <Grid  size={{xs:12 ,md:6}}>
             <TextField
               fullWidth
               label="GST No"
@@ -121,7 +138,7 @@ const PartyLibraryForm = ({
             />
           </Grid>
 
-          <Grid item size={12} md={6}>
+          <Grid  xs={12} md={6}>
             <TextField
               select
               fullWidth

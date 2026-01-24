@@ -6,112 +6,100 @@ import {
   Button,
   TextField,
   MenuItem,
-  Grid,
+  Grid
 } from "@mui/material";
 import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 
-const MaterialLibraryForm = ({ open, data, categories, onClose, onSave }) => {
+const WorkforceTypeForm = ({ open, data, onClose, onSave }) => {
+  const { user } = useSelector((s) => s.auth || {}); // For client_id, created_by
+
   const [form, setForm] = useState({
-    material_name: "",
-    category_id: "",
-    uom: "",
-    status: 1,
+    worker_type: "",
+    employment_type: "Daily",
+    salary_per_hour: 0,
+    status: 1
   });
 
-  // useEffect(() => {
-
-  //   console.log(data);
-
-  //   if (data) {
-  //     setForm(data);
-  //   } else {
-  //     setForm({
-  //       material_name: "",
-  //       category_id: "",
-  //       uom: "",
-  //       status: 1
-  //     });
-  //   }
-  // }, [data]);
-
+  // Initialize form for edit/add
   useEffect(() => {
     if (data) {
       setForm({
-        id: data.id,
-        material_name: data.material_name || "",
-        category_id: data.material_category_id || "",
-        uom: data.uom || "",
-        status: data.status ?? 1,
+        ...data,
+        employment_type: data.employment_type || "Daily",
+        status: data.status ?? 1
       });
     } else {
       setForm({
-        material_name: "",
-        category_id: "",
-        uom: "",
-        status: 1,
+        worker_type: "",
+        employment_type: "Daily",
+        salary_per_hour: 0,
+        status: 1
       });
     }
   }, [data]);
 
   const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: name === "salary_per_hour" ? Number(value) : value });
   };
 
   const handleSubmit = () => {
-    onSave(form);
+    onSave({
+      ...form,
+      client_id: user?.client_id || 1,
+      created_by: user?.id || 1,
+      updated_by: user?.id || 1
+    });
     onClose();
   };
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle>{data ? "Edit Material" : "Add Material"}</DialogTitle>
+      <DialogTitle>{data ? "Edit Workforce Type" : "Add Workforce Type"}</DialogTitle>
 
       <DialogContent dividers>
         <Grid container spacing={2}>
           <Grid item size={12}>
             <TextField
               fullWidth
-              label="Material Name"
-              name="material_name"
-              value={form.material_name}
+              label="Worker Type"
+              name="worker_type"
+              value={form.worker_type}
               onChange={handleChange}
               required
             />
           </Grid>
 
-          <Grid item size={12}>
+          <Grid item size={12} md={6}>
             <TextField
               select
               fullWidth
-              label="Category"
-              name="category_id"
-              value={form.category_id}
+              label="Employment Type"
+              name="employment_type"
+              value={form.employment_type}
               onChange={handleChange}
               required
             >
-              {categories.map((c) => (
-                <MenuItem key={c.id} value={c.id}>
-                  {c.category_name}
-                </MenuItem>
-              ))}
+              <MenuItem value="Daily">Daily</MenuItem>
+              <MenuItem value="Hourly">Hourly</MenuItem>
+              <MenuItem value="Monthly">Monthly</MenuItem>
             </TextField>
           </Grid>
 
-          <Grid item size={12}>
+          <Grid item size={12} md={6}>
             <TextField
               fullWidth
-              label="UOM"
-              name="uom"
-              value={form.uom}
+              type="number"
+              label="Salary per Hour"
+              name="salary_per_hour"
+              value={form.salary_per_hour}
               onChange={handleChange}
-              placeholder="Eg: Bag, Kg, Nos"
+              required
             />
           </Grid>
 
-          <Grid item size={12}>
+          <Grid item size={12} md={6}>
             <TextField
               select
               fullWidth
@@ -137,4 +125,4 @@ const MaterialLibraryForm = ({ open, data, categories, onClose, onSave }) => {
   );
 };
 
-export default MaterialLibraryForm;
+export default WorkforceTypeForm;

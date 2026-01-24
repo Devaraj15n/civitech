@@ -1,24 +1,29 @@
-const base = require('../base.service');
-const { party_master:Party, party_type_master:PartyType } = require('../../models');
+const base = require("../base.service");
+const {
+  party_master: Party,
+  party_type_master: PartyType,
+} = require("../../models");
 
 module.exports = {
   create: (data, user) => {
     return base.create(Party)({
       ...data,
-      client_id: user.client_id
+      client_id: user.client_id,
     });
   },
 
   findAll: (_, user) => {
-    return base.findAll(Party)({
-      where: { client_id: user.client_id },
-      include: [
-        {
-          model: PartyType,
-          as: 'partyType'
-        }
-      ]
-    });
+    return base.findAll(Party)(
+      { client_id: user.client_id }, // ✅ correct
+      {
+        include: [
+          {
+            model: PartyType,
+            as: "partyType",
+          },
+        ],
+      }
+    );
   },
 
   findById: (id, user) => {
@@ -27,21 +32,21 @@ module.exports = {
       include: [
         {
           model: PartyType,
-          as: 'partyType'
-        }
-      ]
+          as: "partyType",
+        },
+      ],
     });
   },
 
   update: (id, data, user) => {
     return base.update(Party)(id, data, {
-      where: { client_id: user.client_id }
+      where: { client_id: user.client_id },
     });
   },
 
   remove: (id, user) => {
     return base.remove(Party)(id, {
-      where: { client_id: user.client_id }
+      where: { client_id: user.client_id },
     });
-  }
+  },
 };

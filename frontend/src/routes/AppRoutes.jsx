@@ -17,6 +17,7 @@ import PartyTypeList from "../pages/library/party-type/PartyTypeList";
 import PartyLibraryList from "../pages/library/party/PartyLibraryList";
 import CostCodeList from "../pages/library/cost-code/CostCodeList";
 import RateMasterList from "../pages/library/rate/RateMasterList";
+import WorkforceTypeList from "../pages/library/workforce-type/WorkforceTypeList";
 
 // Auth Guard
 import ProtectedRoute from "./ProtectedRoute";
@@ -61,6 +62,7 @@ export default function AppRoutes() {
             { path: "parties", element: <PartyLibraryList /> },
             { path: "cost-codes", element: <CostCodeList /> },
             { path: "rates", element: <RateMasterList /> },
+            { path: "workforce-types", element: <WorkforceTypeList /> },
           ],
         },
       ],

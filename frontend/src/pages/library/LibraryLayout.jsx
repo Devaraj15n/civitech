@@ -16,11 +16,11 @@ const libraryMenus = [
     { label: "Cost Code Library", path: "cost-codes" },
     { label: "Rate Library", path: "rates" },
     { label: "Workforce Type", path: "workforce-types" },
-    { label: "Workforce Library", path: "workforce" },
-    { label: "Asset Type Library", path: "asset-types" },
-    { label: "Deduction Library", path: "deductions" },
-    { label: "Retention Library", path: "retentions" },
-    { label: "Progress Master", path: "progress" }
+    // { label: "Workforce Library", path: "workforce" },
+    // { label: "Asset Type Library", path: "asset-types" },
+    // { label: "Deduction Library", path: "deductions" },
+    // { label: "Retention Library", path: "retentions" },
+    // { label: "Progress Master", path: "progress" }
 ];
 
 const LibraryLayout = () => {

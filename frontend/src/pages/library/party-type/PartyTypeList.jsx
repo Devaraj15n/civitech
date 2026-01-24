@@ -1,73 +1,55 @@
 import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import MasterList from "../../../components/master/MasterList";
 import PartyTypeForm from "./PartyTypeForm";
 import {
-  getPartyTypes,
-  createPartyType,
-  updatePartyType,
-} from "../../../features/partyType/partyTypeApi";
+  fetchPartyTypes,
+  savePartyType,
+} from "../../../features/masters/partyType/partyTypeSlice";
 import { showSuccess, showError } from "../../../utils/toastHelper";
 
-
 const PartyTypeList = () => {
-  const [rows, setRows] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();
+
+  const { list: rows = [], loading } = useSelector(
+    (s) => s.partyType || {}
+  );
+
   const [open, setOpen] = useState(false);
   const [editData, setEditData] = useState(null);
 
   useEffect(() => {
-    fetchData();
-  }, []);
-
-  /* ================= FETCH ================= */
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const res = await getPartyTypes();
-
-      setRows(res.data?.data || []); // ✅ FIX
-    } catch (error) {
-      console.error("Failed to fetch party types", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    dispatch(fetchPartyTypes());
+  }, [dispatch]);
 
   /* ================= SAVE ================= */
   const handleSave = async (data) => {
-  try {
-    setLoading(true);
+    try {
+      await dispatch(
+        savePartyType({
+          id: data.id,
+          party_type: data.party_type,
+          status: data.status,
+        })
+      ).unwrap();
 
-    let res;
+      showSuccess({
+        data: { message: "Saved successfully" },
+      });
 
-    if (data.id) {
-      res = await updatePartyType(data.id, {
-        party_type: data.party_type,
-        status: data.status,
-      });
-    } else {
-      res = await createPartyType({
-        party_type: data.party_type,
-        status: data.status,
-      });
+      setOpen(false);
+      dispatch(fetchPartyTypes());
+    } catch (error) {
+      showError(error);
     }
-
-    showSuccess(res, "Saved successfully");
-
-    setOpen(false);
-    fetchData();
-  } catch (error) {
-    showError(error);
-  } finally {
-    setLoading(false);
-  }
-};
-
+  };
 
   return (
     <>
       <MasterList
         title="Party Type Master"
+        rows={rows}
+        loading={loading}
         columns={[
           {
             field: "party_type",
@@ -82,8 +64,6 @@ const PartyTypeList = () => {
               params.row?.status === 1 ? "Active" : "Inactive",
           },
         ]}
-        rows={rows}
-        loading={loading}
         onAdd={() => {
           setEditData(null);
           setOpen(true);

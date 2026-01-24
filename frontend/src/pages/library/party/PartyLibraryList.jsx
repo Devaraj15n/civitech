@@ -1,66 +1,69 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import MasterList from "../../../components/master/MasterList";
 import PartyLibraryForm from "./PartyLibraryForm";
-
-// MOCK PARTY TYPE MASTER
-const partyTypeMaster = [
-  { id: 1, party_type: "Vendor" },
-  { id: 2, party_type: "Client" },
-  { id: 3, party_type: "Contractor" }
-];
-
-// MOCK PARTY DATA
-const mockData = [
-  {
-    id: 1,
-    party_name: "ABC Cement Suppliers",
-    party_type_id: 1,
-    mobile: "9876543210",
-    email: "abc@cement.com",
-    gst_no: "27ABCDE1234F1Z5",
-    status: 1
-  },
-  {
-    id: 2,
-    party_name: "XYZ Builders",
-    party_type_id: 2,
-    mobile: "9123456780",
-    email: "xyz@builders.com",
-    gst_no: "",
-    status: 1
-  }
-];
+import { fetchParties, saveParty } from "../../../features/masters/party/partySlice";
+import { fetchPartyTypes } from "../../../features/masters/partyType/partyTypeSlice";
+import { showSuccess, showError } from "../../../utils/toastHelper";
 
 const PartyLibraryList = () => {
-  const [rows, setRows] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();
+
+  const { list: rows = [], loading = false } = useSelector((s) => s.party);
+
+  const { list: partyTypes = [] } = useSelector((s) => s.partyType);
+
   const [open, setOpen] = useState(false);
   const [editData, setEditData] = useState(null);
 
+  // 🔹 Corporate data loading
   useEffect(() => {
-    fetchData();
-  }, []);
+    dispatch(fetchParties());
+    dispatch(fetchPartyTypes());
+  }, [dispatch]);
 
-  const fetchData = async () => {
-    setLoading(true);
-    setRows(mockData);
-    setLoading(false);
-  };
+  // 🔹 Save handler (same pattern as Material)
+  const handleSave = async (form) => {
+    const payload = {
+      id: form.id,
+      party_name: form.party_name,
+      email: form.email,
+      phone: form.mobile,
+      address: form.address,
+      party_type_id: form.party_type_id,
+      gst_number: form.gst_no,
+    };
 
-  const handleSave = (data) => {
-    if (data.id) {
-      // UPDATE
-      setRows((prev) =>
-        prev.map((r) => (r.id === data.id ? data : r))
-      );
-    } else {
-      // CREATE
-      setRows((prev) => [
-        ...prev,
-        { ...data, id: Date.now(), status: 1 }
-      ]);
+    try {
+      await dispatch(saveParty(payload)).unwrap();
+
+      showSuccess({
+        data: {
+          message: payload.id
+            ? "Party updated successfully"
+            : "Party created successfully",
+        },
+      });
+
+      setOpen(false);
+      dispatch(fetchParties());
+    } catch (err) {
+      showError(err);
     }
   };
+
+  // 🔹 Corporate mapping (fast + clean)
+  const partyTypeMap = useMemo(() => {
+    const map = {};
+    partyTypes.forEach((p) => {
+      map[p.id] = p.party_type; // ✅ correct field
+    });
+    return map;
+  }, [partyTypes]);
+
+  useEffect(() => {
+  console.log("partyTypes from redux:", partyTypes);
+}, [partyTypes]);
 
   return (
     <>
@@ -72,34 +75,32 @@ const PartyLibraryList = () => {
           {
             field: "party_name",
             headerName: "Party Name",
-            flex: 1
+            flex: 1,
           },
           {
             field: "party_type_id",
             headerName: "Party Type",
             flex: 1,
-            valueGetter: (params) =>
-              partyTypeMaster.find(
-                (p) => p.id === params.row?.party_type_id
-              )?.party_type || "-"
+            valueGetter: (params) => {
+              return partyTypeMap[params] || "-";;
+            },
           },
           {
-            field: "mobile",
+            field: "phone",
             headerName: "Mobile",
-            width: 140
+            width: 140,
           },
           {
-            field: "gst_no",
+            field: "gst_number",
             headerName: "GST No",
-            width: 170
+            width: 170,
           },
           {
             field: "status",
             headerName: "Status",
             width: 120,
-            renderCell: (params) =>
-              params.row?.status === 1 ? "Active" : "Inactive"
-          }
+            renderCell: ({ row }) => (row.status === 1 ? "Active" : "Inactive"),
+          },
         ]}
         onAdd={() => {
           setEditData(null);
@@ -114,7 +115,7 @@ const PartyLibraryList = () => {
       <PartyLibraryForm
         open={open}
         data={editData}
-        partyTypes={partyTypeMaster}
+        partyTypes={partyTypes}
         onClose={() => setOpen(false)}
         onSave={handleSave}
       />
