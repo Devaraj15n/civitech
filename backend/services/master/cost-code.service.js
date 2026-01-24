@@ -24,8 +24,11 @@ module.exports = {
             parent_cost_code_id: data.parent_cost_code_id ?? null,
             cost_component: data.cost_component,
             description: data.description ?? null,
+            created_by: user.client_id,
+            updated_by: user.client_id
         });
     },
+
 
     /* ================= FIND ALL ================= */
     findAll: (_, user) => {

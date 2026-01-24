@@ -13,5 +13,16 @@ build/
 frontend/node_modules/
 frontend/node_modules/.cache/
 
+# Frontend
+frontend/package-lock.json
+
+# Backend
+backend/node_modules/
+backend/node_modules/.cache/
+backend/config/database.js/
+backend/.env
+
+
+
 # # Env
 # .env

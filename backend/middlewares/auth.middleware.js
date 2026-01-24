@@ -5,7 +5,7 @@ module.exports = (req, res, next) => {
   try {
     // 1️⃣ Check if Authorization header exists
     const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!authHeader || !authHeader.startsWith('Bearer')) {
       return res.status(401).json({ message: 'Token missing or malformed' });
     }
 
@@ -17,6 +17,12 @@ module.exports = (req, res, next) => {
 
     // 4️⃣ Attach payload to req.user
     req.user = decoded;
+
+    req.user = {
+      id: decoded.user_id,          // <-- map user_id to id
+      client_id: decoded.client_id, // <-- keep same
+      user_type: decoded.user_type
+    };
 
     // 5️⃣ Proceed to next middleware / route
     next();

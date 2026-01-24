@@ -18,11 +18,19 @@ router.use("/materials", require("./master/material-master.routes"));
 
 router.use("/cost-codes", require("./master/cost-code.routes"));
 router.use("/rates", require("./master/rate.routes"));
+router.use("/assets", require("./master/asset.routes"));
 router.use("/workforce-types", require("./master/workforce-type.routes"));
 router.use("/workforce", require("./master/workforce.routes"));
 router.use("/deductions", require("./master/deduction.routes"));
 router.use("/retentions", require("./master/retention.routes"));
 router.use("/progress", require("./master/progress.routes"));
+
+
+// Project Routes
+router.use("/projects", require("./project/projectMaster.routes"));
+router.use("/tasks", require("./project/TaskMaster.routes"));
+router.use("/sub-tasks", require("./project/SubTask.routes"));
+router.use("/project-progress", require("./project/ProgressTracking.routes"));
 
 
 
