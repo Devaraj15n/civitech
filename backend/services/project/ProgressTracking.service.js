@@ -29,6 +29,9 @@ module.exports = {
 
     /* ================= FIND ALL ================= */
     findAll: (query, user) => {
+
+        console.log("TEST=============");
+        
         if (!user?.client_id) {
             throw new Error("Client ID is required");
         }
@@ -42,6 +45,11 @@ module.exports = {
 
     /* ================= FIND BY ID ================= */
     findById: async (id, user) => {
+
+        console.log('TEST1111111111111111');
+        console.log(id);
+        console.log(user);
+        
         if (!user?.client_id) {
             throw new Error("Client ID is required");
         }

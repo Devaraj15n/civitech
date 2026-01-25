@@ -1,25 +1,43 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import {
   getProjects,
+  getProjectById, // ✅ MISSING IMPORT (FIXED)
   createProject,
   updateProject,
   deleteProjectApi,
 } from "./projectApi";
 
-/* ================= FETCH ================= */
+/* ================= FETCH ALL ================= */
 export const fetchProjects = createAsyncThunk(
   "project/fetch",
   async (_, { rejectWithValue }) => {
     try {
       const res = await getProjects();
-      return res.data.data; // match your API response
+      return res.data.data;
     } catch (err) {
       return rejectWithValue(err.response?.data || err.message);
     }
   }
 );
 
-/* ================= SAVE (CREATE/UPDATE) ================= */
+/* ================= FETCH BY ID ================= */
+export const fetchProjectById = createAsyncThunk(
+  "project/fetchById",
+  async (id, { rejectWithValue }) => {
+    try {
+      const res = await getProjectById(id);
+
+      console.log("res.data.data========");
+      console.log(res.data.data);
+      
+      return res.data.data || null;
+    } catch (err) {
+      return rejectWithValue(err.response?.data || err.message);
+    }
+  }
+);
+
+/* ================= SAVE ================= */
 export const saveProject = createAsyncThunk(
   "project/save",
   async (payload, { rejectWithValue }) => {
@@ -55,13 +73,14 @@ const projectSlice = createSlice({
   name: "project",
   initialState: {
     list: [],
+    current: null, // ✅ REQUIRED for project details
     loading: false,
     error: null,
   },
   reducers: {},
   extraReducers: (builder) => {
     builder
-      /* FETCH */
+      /* ================= FETCH ALL ================= */
       .addCase(fetchProjects.pending, (state) => {
         state.loading = true;
       })
@@ -74,7 +93,21 @@ const projectSlice = createSlice({
         state.error = action.payload;
       })
 
-      /* SAVE */
+      /* ================= FETCH BY ID ================= */
+      .addCase(fetchProjectById.pending, (state) => {
+        state.loading = true;
+        state.current = null;
+      })
+      .addCase(fetchProjectById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.current = action.payload; // ✅ THIS WAS MISSING
+      })
+      .addCase(fetchProjectById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      /* ================= SAVE ================= */
       .addCase(saveProject.pending, (state) => {
         state.loading = true;
       })
@@ -86,7 +119,7 @@ const projectSlice = createSlice({
         state.error = action.payload;
       })
 
-      /* DELETE */
+      /* ================= DELETE ================= */
       .addCase(deleteProject.pending, (state) => {
         state.loading = true;
       })

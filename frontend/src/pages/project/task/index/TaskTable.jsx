@@ -14,41 +14,42 @@ import { fetchTasks } from "../../../../features/projects/tasks/taskSlice";
 import TaskRow from "./TaskRow";
 import ProgressDrawer from "../progress/ProgressDrawer";
 import TaskDrawer from "../drawer/TaskDrawer";
+import SubTaskDrawer from "../drawer/SubTaskDrawer";
 
 export default function TaskTable({ projectId }) {
   const dispatch = useDispatch();
   const { list: tasks = [], loading } = useSelector((s) => s.projectTask);
 
-  const [openProgress, setOpenProgress] = useState(false);
-  const [selectedTask, setSelectedTask] = useState(null);
-
+  const [openTaskDrawer, setOpenTaskDrawer] = useState(false);
   const [openSubTaskDrawer, setOpenSubTaskDrawer] = useState(false);
+
+  const [selectedTask, setSelectedTask] = useState(null);
   const [parentTask, setParentTask] = useState(null);
+
+  const [openProgress, setOpenProgress] = useState(false);
 
   useEffect(() => {
     if (projectId) dispatch(fetchTasks(projectId));
   }, [dispatch, projectId]);
 
-  const handleAddSubTaskClick = (task) => {
+  /* ================= HANDLERS ================= */
+
+  const handleAddTask = () => {
+    setSelectedTask(null);
+    setOpenTaskDrawer(true);
+  };
+
+  const handleAddSubTask = (task) => {
     setParentTask(task);
     setOpenSubTaskDrawer(true);
   };
 
-  const handleOpenProgress = (taskOrSubTask) => {
-    setSelectedTask(taskOrSubTask);
+  const handleOpenProgress = (data) => {
+    setSelectedTask(data);
     setOpenProgress(true);
   };
 
-  const handleCloseProgress = () => {
-    setOpenProgress(false);
-    setSelectedTask(null);
-  };
-
   if (loading) return <CircularProgress />;
-
-  console.log("projectId+++++++++");
-  console.log(projectId);
-  
 
   return (
     <>
@@ -61,9 +62,8 @@ export default function TaskTable({ projectId }) {
               <TableCell>Duration</TableCell>
               <TableCell>Start Date</TableCell>
               <TableCell>End Date</TableCell>
-              <TableCell>Progress Status</TableCell>
-              <TableCell>Planned Start</TableCell>
-              <TableCell>Planned End</TableCell>
+              {/* <TableCell>Progress</TableCell> */}
+              <TableCell>Status</TableCell>
               <TableCell />
             </TableRow>
           </TableHead>
@@ -74,26 +74,34 @@ export default function TaskTable({ projectId }) {
                 key={task.id}
                 task={task}
                 index={index + 1}
+                onAddSubTaskClick={handleAddSubTask}
                 onOpenProgress={handleOpenProgress}
-                onAddSubTaskClick={handleAddSubTaskClick}
               />
             ))}
           </TableBody>
         </Table>
       </Paper>
 
-      <ProgressDrawer
-        open={openProgress}
-        onClose={handleCloseProgress}
-        task={selectedTask}
+      {/* TASK DRAWER */}
+      <TaskDrawer
+        open={openTaskDrawer}
+        onClose={() => setOpenTaskDrawer(false)}
+        projectId={projectId}
+        editData={selectedTask}
       />
 
-      <TaskDrawer
+      {/* SUB TASK DRAWER */}
+      <SubTaskDrawer
         open={openSubTaskDrawer}
         onClose={() => setOpenSubTaskDrawer(false)}
         parentTask={parentTask}
-        projectId={projectId} // <-- pass it here
-        editData={selectedTask}
+      />
+
+      {/* PROGRESS */}
+      <ProgressDrawer
+        open={openProgress}
+        onClose={() => setOpenProgress(false)}
+        task={selectedTask}
       />
     </>
   );

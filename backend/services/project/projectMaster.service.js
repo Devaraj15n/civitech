@@ -1,5 +1,5 @@
 const base = require("../base.service");
-const { project_master: Project,task_master:Task } = require("../../models");
+const { project_master: Project, task_master: Task } = require("../../models");
 const { Sequelize } = require("sequelize");
 
 module.exports = {
@@ -123,6 +123,22 @@ module.exports = {
         project_id: projectId,
         status: 1,
       },
+
+      attributes: {
+        include: [
+          [
+            Sequelize.literal(`(
+            SELECT COUNT(*)
+            FROM sub_task AS st
+            WHERE st.task_id = task_master.id
+              AND st.status = 1
+          )`),
+            "subtask_count",
+          ],
+        ],
+      },
+
+      order: [["id", "ASC"]],
     });
   },
 

@@ -1,47 +1,37 @@
-import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  Grid
-} from "@mui/material";
+import { Box, Card, CardContent, Typography, Grid } from "@mui/material";
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchDashboard } from "../../features/dashboard/dashboardSlice";
 
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell
-} from "recharts";
-
-/* ---- Sample Data ---- */
-const projectSummary = [
-  { title: "Total Projects", value: 12, color: "#1976d2" },
-  { title: "Ongoing Projects", value: 7, color: "#0288d1" },
-  { title: "Completed Projects", value: 4, color: "#2e7d32" },
-  { title: "Delayed Projects", value: 1, color: "#d32f2f" }
-];
-
-const monthlyProgress = [
-  { month: "Jan", progress: 40 },
-  { month: "Feb", progress: 55 },
-  { month: "Mar", progress: 70 },
-  { month: "Apr", progress: 85 }
-];
-
-const projectStatus = [
-  { name: "Ongoing", value: 7 },
-  { name: "Completed", value: 4 },
-  { name: "Delayed", value: 1 }
-];
-
-const COLORS = ["#0288d1", "#2e7d32", "#d32f2f"];
+const COLORS = ["#0288d1", "#2e7d32", "#f9a825", "#d32f2f"];
 
 const Dashboard = () => {
+  const dispatch = useDispatch();
+  const { summary, statusChart, loading } = useSelector((s) => s.dashboard);
+
+  useEffect(() => {
+    dispatch(fetchDashboard());
+  }, [dispatch]);
+
+  if (loading || !summary) {
+    return <Typography>Loading dashboard...</Typography>;
+  }
+
+  /* 🔹 KPI Cards from DB */
+  const projectSummary = [
+    { title: "Total Projects", value: summary.total, color: "#1976d2" },
+    { title: "Ongoing Projects", value: summary.ongoing, color: "#0288d1" },
+    { title: "Completed Projects", value: summary.completed, color: "#2e7d32" },
+    { title: "Delayed Projects", value: summary.delayed, color: "#d32f2f" },
+  ];
+
+  /* 🔹 Convert API statusChart to Recharts format */
+  const pieData = statusChart.map((item) => ({
+    name: item.project_status,
+    value: item.count,
+  }));
+
   return (
     <Box sx={{ width: "100%" }}>
       <Typography variant="h5" mb={3} fontWeight={600}>
@@ -56,7 +46,7 @@ const Dashboard = () => {
               sx={{
                 height: "100%",
                 background: `linear-gradient(135deg, ${item.color}, ${item.color}cc)`,
-                color: "#fff"
+                color: "#fff",
               }}
             >
               <CardContent>
@@ -72,37 +62,10 @@ const Dashboard = () => {
         ))}
       </Grid>
 
-      {/* Charts Section */}
+      {/* Pie Chart */}
       <Grid container spacing={2}>
-        {/* Bar Chart */}
-        <Grid size={{ xs: 12, md: 8 }}>
-          <Card sx={{ height: "100%" }}>
-            <CardContent>
-              <Typography mb={2} fontWeight={600}>
-                Monthly Project Progress (%)
-              </Typography>
-
-              <Box sx={{ height: 300 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={monthlyProgress}>
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar
-                      dataKey="progress"
-                      fill="#1976d2"
-                      radius={[6, 6, 0, 0]}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Pie Chart */}
-        <Grid size={{ xs: 12, md: 4 }}>
-          <Card sx={{ height: "100%" }}>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <Card>
             <CardContent>
               <Typography mb={2} fontWeight={600}>
                 Project Status
@@ -112,17 +75,17 @@ const Dashboard = () => {
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
-                      data={projectStatus}
+                      data={pieData}
                       dataKey="value"
                       nameKey="name"
                       innerRadius={60}
                       outerRadius={100}
                       paddingAngle={4}
                     >
-                      {projectStatus.map((_, index) => (
+                      {pieData.map((_, index) => (
                         <Cell
                           key={index}
-                          fill={COLORS[index]}
+                          fill={COLORS[index % COLORS.length]}
                         />
                       ))}
                     </Pie>
@@ -131,28 +94,28 @@ const Dashboard = () => {
                 </ResponsiveContainer>
               </Box>
 
-              {/* Simple Legend */}
+              {/* Legend */}
               <Box mt={2}>
-                {projectStatus.map((item, index) => (
+                {pieData.map((item, index) => (
                   <Box
                     key={item.name}
                     sx={{
                       display: "flex",
                       alignItems: "center",
-                      mb: 0.5
+                      mb: 0.5,
                     }}
                   >
                     <Box
                       sx={{
                         width: 10,
                         height: 10,
-                        backgroundColor: COLORS[index],
+                        backgroundColor: COLORS[index % COLORS.length],
                         borderRadius: "50%",
-                        mr: 1
+                        mr: 1,
                       }}
                     />
                     <Typography variant="body2">
-                      {item.name}
+                      {item.name} ({item.value})
                     </Typography>
                   </Box>
                 ))}

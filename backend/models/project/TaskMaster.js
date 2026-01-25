@@ -32,14 +32,23 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.INTEGER,
                 allowNull: true,
             },
-
-            assigned_to: {
+            quantity: {
                 type: DataTypes.INTEGER,
                 allowNull: true,
             },
+            unit: {
+                type: DataTypes.STRING(200),
+                allowNull: true,
+            },
+
+            assigned_to: {
+                type: DataTypes.JSON,
+                allowNull: true,
+                comment: "Array of user IDs assigned to this task",
+            },
 
             task_status: {
-                type: DataTypes.ENUM("Pending", "In Progress", "Completed"),
+                type: DataTypes.ENUM("Pending", "Ongoing", "Completed","Hold"),
                 defaultValue: "Pending",
             },
 

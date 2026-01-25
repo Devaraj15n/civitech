@@ -7,12 +7,15 @@ import {
   Box,
   Menu,
   MenuItem,
-  Button,
+  Collapse,
+  Tooltip 
 } from "@mui/material";
 
-import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+
+import SubTaskTable from "../subtask/SubTaskTable";
 
 export default function TaskRow({
   task,
@@ -21,58 +24,70 @@ export default function TaskRow({
   onAddSubTaskClick,
 }) {
   const [anchorEl, setAnchorEl] = useState(null);
-  const openMenu = Boolean(anchorEl);
+  const [open, setOpen] = useState(false);
 
-  const handleMenuOpen = (e) => setAnchorEl(e.currentTarget);
-  const handleMenuClose = () => setAnchorEl(null);
+  const hasSubTasks = task.subtask_count > 0;
 
   return (
     <>
-      {/* ================= PARENT TASK ================= */}
-      <TableRow>
-        <TableCell>{index}</TableCell>
+      {/* ================= TASK ROW ================= */}
+      <TableRow hover>
+        <TableCell width={60}>{index}</TableCell>
 
         <TableCell>
           <Box display="flex" alignItems="center" gap={1}>
-            <KeyboardArrowDownIcon fontSize="small" />
-            <b>{task.name}</b>
+            <IconButton size="small" onClick={() => setOpen(!open)}>
+              {open ? <KeyboardArrowDownIcon /> : <KeyboardArrowRightIcon />}
+            </IconButton>
+
+            <strong>{task.task_name}</strong>
           </Box>
         </TableCell>
 
-        <TableCell>{task.duration}</TableCell>
-        <TableCell>-</TableCell>
-        <TableCell>-</TableCell>
+        <TableCell>{task.duration_days}</TableCell>
+        <TableCell>{task.start_date}</TableCell>
+        <TableCell>{task.end_date}</TableCell>
+        {/* <TableCell>{task.end_date}</TableCell> */}
 
-        {/* PROGRESS + CHAT */}
-        {/* PROGRESS + CHAT */}
-        <TableCell sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <Chip label={`${task.progress} %`} size="small" color="info" />
-
-          {/* 💬 Show chat ONLY if no subtasks */}
-          {task.children.length === 0 && (
-            <IconButton
+        {/* 🔒 PROGRESS */}
+        <TableCell>
+          {
+          
+          hasSubTasks ? (
+            <Tooltip title="Progress is tracked via subtasks">
+              <Chip
+                size="small"
+                label={task.task_status}
+                color="default"
+              />
+            </Tooltip>
+          ) : (
+            <Chip
               size="small"
-              color="primary"
+              label={task.task_status}
+              color="info"
+              clickable
               onClick={() => onOpenProgress(task)}
-            >
-              <ChatBubbleOutlineIcon fontSize="small" />
-            </IconButton>
+            />
           )}
         </TableCell>
 
-        <TableCell>-</TableCell>
-        <TableCell>-</TableCell>
-
-        {/* EDIT MENU */}
-        <TableCell>
-          <IconButton onClick={handleMenuOpen}>
+        <TableCell align="right">
+          <IconButton
+            size="small"
+            onClick={(e) => setAnchorEl(e.currentTarget)}
+          >
             <MoreVertIcon />
           </IconButton>
 
-          <Menu anchorEl={anchorEl} open={openMenu} onClose={handleMenuClose}>
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={() => setAnchorEl(null)}
+          >
             <MenuItem
               onClick={() => {
-                handleMenuClose();
+                setAnchorEl(null);
                 onAddSubTaskClick(task);
               }}
             >
@@ -83,47 +98,22 @@ export default function TaskRow({
       </TableRow>
 
       {/* ================= SUB TASKS ================= */}
-      {task.children.map((sub, i) => (
-        <TableRow key={sub.id}>
-          <TableCell>
-            {index}.{i + 1}
-          </TableCell>
-
-          <TableCell sx={{ pl: 5 }}>↳ {sub.name}</TableCell>
-
-          <TableCell>{sub.duration}</TableCell>
-          <TableCell>-</TableCell>
-          <TableCell>-</TableCell>
-
-          <TableCell sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Chip label={`${sub.progress} %`} size="small" variant="outlined" />
-
-            {/* SUB TASK CHAT */}
-            <IconButton
-              size="small"
-              color="primary"
-              onClick={() =>
-                onOpenProgress({
-                  ...sub,
-                  parentTaskId: task.id,
-                  parentTaskName: task.name,
-                })
-              }
+      <TableRow>
+        <TableCell colSpan={7} sx={{ p: 0 }}>
+          <Collapse in={open} timeout="auto" unmountOnExit>
+            <Box
+              sx={{
+                pl: 6,
+                py: 1,
+                borderLeft: "3px solid #e0e0e0",
+                bgcolor: "#fafafa",
+              }}
             >
-              <ChatBubbleOutlineIcon fontSize="small" />
-            </IconButton>
-          </TableCell>
-
-          <TableCell>-</TableCell>
-          <TableCell>-</TableCell>
-
-          <TableCell>
-            <IconButton size="small">
-              <MoreVertIcon />
-            </IconButton>
-          </TableCell>
-        </TableRow>
-      ))}
+              <SubTaskTable taskId={task.id} onOpenProgress={onOpenProgress} />
+            </Box>
+          </Collapse>
+        </TableCell>
+      </TableRow>
     </>
   );
 }

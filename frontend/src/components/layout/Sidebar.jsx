@@ -29,7 +29,7 @@ import BuildIcon from "@mui/icons-material/Build";
 import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
 import SettingsIcon from "@mui/icons-material/Settings";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
-
+import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import { useNavigate } from "react-router-dom";
 
 const EXPANDED_WIDTH = 240;
@@ -63,6 +63,7 @@ const Sidebar = ({ onToggle }) => {
     // { text: "Payroll", icon: <PaymentIcon />, path: "/payroll" },
     // { text: "Assets", icon: <EngineeringIcon />, path: "/assets" },
     // { text: "Services", icon: <BuildIcon />, path: "/services" },
+    { text: "People and Finance", icon: <PeopleAltIcon />, path: "/party-finance" },
     { text: "Library", icon: <LibraryBooksIcon />, path: "/library" },
     // { text: "Setting", icon: <SettingsIcon />, path: "/setting" },
     // { text: "Help", icon: <HelpOutlineIcon />, path: "/help" }

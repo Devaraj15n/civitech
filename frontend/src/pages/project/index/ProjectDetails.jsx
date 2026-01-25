@@ -1,42 +1,50 @@
-import { Box, Tabs, Tab } from "@mui/material";
+import { Box, Tabs, Tab, CircularProgress } from "@mui/material";
 import { Outlet, useNavigate, useParams, useLocation } from "react-router-dom";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchProjectById } from "../../../features/projects/projectSlice";
 import ProjectHeader from "./ProjectHeader";
 
-const ALLOWED_TABS = [
-  "overview",
-  "tasks",
-  "boq",
-  "materials",
-  "transactions"
-];
+const ALLOWED_TABS = ["overview", "tasks", "boq", "materials", "transactions"];
 
 export default function ProjectDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch();
 
-  const project = {
-    name: "Residential Apartment – Phase 1",
-    code: "PRJ-1023",
-    client: "ABC Builders",
-    status: "Active",
-    startDate: "01 Jan 2025",
-    endDate: "30 Dec 2025"
-  };
+  const { current: project, loading } = useSelector(
+    (s) => s.project
+  );
+
+  // console.log("id");
+  // console.log(id);
+  // console.log("project++++++++++++");
+  // console.log(project);
+  
+
+  useEffect(() => {
+      // console.log("Dispatching fetchProjectById", id);
+
+    dispatch(fetchProjectById(id));
+  }, [id, dispatch]);
 
   /**
-   * ✅ Always extract ONLY the project-level tab
-   * URL format: /projects/:id/:tab/...
+   * Extract project-level tab
+   * /projects/:id/:tab/...
    */
   const currentTab = useMemo(() => {
     const [, , , tab] = location.pathname.split("/");
     return ALLOWED_TABS.includes(tab) ? tab : "overview";
   }, [location.pathname]);
 
-  const handleTabChange = (_, value) => {
-    navigate(`/projects/${id}/${value}`);
-  };
+  if (loading || !project) {
+    return (
+      <Box display="flex" justifyContent="center" mt={4}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Box>
@@ -44,18 +52,8 @@ export default function ProjectDetails() {
 
       <Tabs
         value={currentTab}
-        onChange={handleTabChange}
-        sx={{
-          borderBottom: "1px solid #E0E0E0",
-          mb: 2,
-          minHeight: 44,
-          "& .MuiTab-root": {
-            textTransform: "none",
-            fontWeight: 500,
-            fontSize: "14px",
-            minHeight: 44
-          }
-        }}
+        onChange={(_, v) => navigate(`/projects/${id}/${v}`)}
+        sx={{ borderBottom: "1px solid #e0e0e0", mb: 2 }}
       >
         <Tab label="Overview" value="overview" />
         <Tab label="Tasks" value="tasks" />
