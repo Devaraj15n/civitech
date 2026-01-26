@@ -7,6 +7,7 @@ import {
   Button,
   IconButton,
   Stack,
+  MenuItem
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { useDispatch, useSelector } from "react-redux";
@@ -105,7 +106,7 @@ export default function SubTaskDrawer({ open, onClose, parentTask }) {
             onChange={handleChange}
           />
 
-          <TextField
+          {/* <TextField
             label="Quantity *"
             name="quantity"
             type="number" // ✅ ensures only numbers
@@ -132,7 +133,7 @@ export default function SubTaskDrawer({ open, onClose, parentTask }) {
                 </MenuItem>
               )
             )}
-          </TextField>
+          </TextField> */}
 
           <TextField
             label="Notes"
