@@ -4,7 +4,7 @@ import ProjectDetails from "./index/ProjectDetails";
 import ProjectOverview from "./overview/ProjectOverview";
 import BoqList from "./boq/ProjectBOQ";
 import TaskList from "./task/index/ProjectTasks";
-import ProgressTracking from "./progress/ProjectProgress";
+// import ProgressTracking from "./progress/ProjectProgress";
 import MaterialTransactions from "./material/ProjectMaterials";
 
 /* 🔹 TRANSACTION */
@@ -20,7 +20,7 @@ export default {
     { path: "overview", element: <ProjectOverview /> },
     { path: "boq", element: <BoqList /> },
     { path: "tasks", element: <TaskList /> },
-    { path: "progress", element: <ProgressTracking /> },
+    // { path: "progress", element: <ProgressTracking /> },
     { path: "materials", element: <MaterialTransactions /> },
     /* 🔥 TRANSACTIONS */
     {

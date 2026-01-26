@@ -11,6 +11,13 @@ import workforceTypeReducer from "../features/masters/workforceType/workforceTyp
 //project
 import projectReducer from "../features/projects/projectSlice";
 import projectTaskReducer from "../features/projects/tasks/taskSlice";
+import subTaskReducer from "../features/projects/subtasks/subTaskSlice";
+import progressReducer from "../features/progress/progressSlice"; // ✅ import
+
+
+
+//dashboard
+import dashboardReducer from '../features/dashboard/dashboardSlice'
 
 const rootReducer = {
   auth: authReducer,
@@ -24,7 +31,13 @@ const rootReducer = {
 
   // Project
   project: projectReducer,
-  projectTask:projectTaskReducer
+  projectTask:projectTaskReducer,
+  projectSubTask: subTaskReducer,
+  progress: progressReducer, // ✅ add it here
+
+  // Dashboard
+  dashboard: dashboardReducer
+
 };
 
 export default rootReducer;

@@ -14,7 +14,8 @@ root.render(
   <ThemeProvider theme={theme}>
     <CssBaseline />
     <Provider store={store}>
-      <BrowserRouter>
+      {/* <BrowserRouter basename="/civitech_test"> */}
+      <BrowserRouter basename="/civitech_test">
         <App />
       </BrowserRouter>
     </Provider>

@@ -1,6 +1,9 @@
 import { Box, Typography, Chip, Stack } from "@mui/material";
 
 export default function ProjectHeader({ project }) {
+  // console.log("project");
+  // console.log(project);
+  
   return (
     <Box
       p={2}
@@ -10,26 +13,26 @@ export default function ProjectHeader({ project }) {
       boxShadow="0 1px 4px rgba(0,0,0,0.08)"
     >
       <Typography variant="h6" fontWeight={600}>
-        {project.name}
+        {project.project_name}
       </Typography>
 
       <Stack direction="row" spacing={2} mt={1} alignItems="center">
         <Typography variant="body2" color="text.secondary">
-          Code: {project.code}
+          Code: {project.project_code}
         </Typography>
 
-        <Typography variant="body2" color="text.secondary">
-          Client: {project.client}
-        </Typography>
+        {/* <Typography variant="body2" color="text.secondary">
+          Client: {project.client_id}
+        </Typography> */}
 
         <Chip
-          label={project.status}
+          label={project.project_status}
           size="small"
-          color={project.status === "Active" ? "success" : "default"}
+          
         />
 
         <Typography variant="body2" color="text.secondary">
-          {project.startDate} → {project.endDate}
+          {project.start_date} → {project.end_date}
         </Typography>
       </Stack>
     </Box>

@@ -19,6 +19,11 @@ import CostCodeList from "../pages/library/cost-code/CostCodeList";
 import RateMasterList from "../pages/library/rate/RateMasterList";
 import WorkforceTypeList from "../pages/library/workforce-type/WorkforceTypeList";
 
+
+
+//party 
+import PartyList from "../pages/party_and_finance/party/PartyList"
+
 // Auth Guard
 import ProtectedRoute from "./ProtectedRoute";
 
@@ -37,6 +42,7 @@ export default function AppRoutes() {
       ),
       children: [
         { path: "dashboard", element: <Dashboard /> },
+        { path: "party-finance", element: <PartyList /> },
 
         // PROJECT LIST + ADD
         {

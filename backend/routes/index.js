@@ -33,5 +33,8 @@ router.use("/sub-tasks", require("./project/SubTask.routes"));
 router.use("/project-progress", require("./project/ProgressTracking.routes"));
 
 
+// Dashboard Routes
+router.use("/dashboard", require("./dashboard.routes"));
+
 
 module.exports = router;

@@ -10,4 +10,7 @@ router.get('/:id', controller.findById);
 router.put('/:id', controller.update);
 router.delete('/:id', controller.remove);
 
+/* 🔥 NESTED ROUTE (IMPORTANT) */
+router.get("/:taskId/sub-tasks", controller.findByTaskId);
+
 module.exports = router;

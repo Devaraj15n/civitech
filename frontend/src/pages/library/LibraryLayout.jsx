@@ -12,7 +12,7 @@ const libraryMenus = [
     { label: "Party Type", path: "party-types" },
     { label: "Material Category", path: "material-categories" },
     { label: "Material Library", path: "materials" },
-    { label: "Party Library", path: "parties" },
+    // { label: "Party Library", path: "parties" },
     { label: "Cost Code Library", path: "cost-codes" },
     { label: "Rate Library", path: "rates" },
     { label: "Workforce Type", path: "workforce-types" },
