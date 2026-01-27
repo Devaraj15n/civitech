@@ -20,7 +20,7 @@ module.exports = {
             progress_quantity: data.progress_quantity,
             progress_percentage: data.progress_percentage ?? 0.0,
             remarks: data.remarks ?? null,
-
+            client_id: user.client_id,
             status: 1,
             created_by: user.id,
             updated_by: user.id,
@@ -31,7 +31,7 @@ module.exports = {
     findAll: (query, user) => {
 
         console.log("TEST=============");
-        
+
         if (!user?.client_id) {
             throw new Error("Client ID is required");
         }
@@ -46,10 +46,10 @@ module.exports = {
     /* ================= FIND BY ID ================= */
     findById: async (id, user) => {
 
-        console.log('TEST1111111111111111');
-        console.log(id);
-        console.log(user);
-        
+        // console.log('TEST1111111111111111');
+        // console.log(id);
+        // console.log(user);
+
         if (!user?.client_id) {
             throw new Error("Client ID is required");
         }
@@ -62,6 +62,23 @@ module.exports = {
             },
         });
     },
+
+    findByField: async (field, value, user) => {
+        if (!user?.client_id) {
+            throw new Error("Client ID is required");
+        }
+
+        return ProgressTracking.findAll({
+            where: {
+                task_id: value,
+                status: 1,
+                // client_id: user.client_id,
+            },
+            order: [["progress_date", "DESC"]],
+        });
+    },
+
+
 
     /* ================= UPDATE ================= */
     update: async (id, data, user) => {

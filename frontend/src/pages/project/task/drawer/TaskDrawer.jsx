@@ -29,8 +29,8 @@ export default function TaskDrawer({ open, onClose, projectId, editData }) {
   const { list: parties = [] } = useSelector((s) => s.party);
   const { list: partyTypes = [] } = useSelector((s) => s.partyType);
 
-  console.log("parties");
-  console.log(parties);
+  // console.log("parties");
+  // console.log(parties);
 
   /* ---------------- Party Type Map ---------------- */
   const partyTypeMap = useMemo(() => {

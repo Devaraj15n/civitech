@@ -9,5 +9,6 @@ router.get('/', controller.findAll);
 router.get('/:id', controller.findById);
 router.put('/:id', controller.update);
 router.delete('/:id', controller.remove);
+router.get('/task/:taskId', controller.findByTaskId);
 
 module.exports = router;

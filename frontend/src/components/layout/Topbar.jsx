@@ -24,8 +24,8 @@ const Topbar = ({ sidebarWidth }) => {
   const { user } = useSelector((s) => s.auth); // ✅ logged user
   const [anchorEl, setAnchorEl] = useState(null);
 
-  console.log("user=======");
-  console.log(user);
+  // console.log("user=======");
+  // console.log(user);
   
 
   const handleMenuOpen = (event) => {

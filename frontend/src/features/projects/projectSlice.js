@@ -27,9 +27,9 @@ export const fetchProjectById = createAsyncThunk(
     try {
       const res = await getProjectById(id);
 
-      console.log("res.data.data========");
+      // console.log("res.data.data========");
       console.log(res.data.data);
-      
+
       return res.data.data || null;
     } catch (err) {
       return rejectWithValue(err.response?.data || err.message);
@@ -45,8 +45,10 @@ export const saveProject = createAsyncThunk(
       let res;
       if (payload.id) {
         res = await updateProject(payload.id, payload);
+        console.log(res + " if ");
       } else {
         res = await createProject(payload);
+        console.log(res + " else ");
       }
       return res.data;
     } catch (err) {

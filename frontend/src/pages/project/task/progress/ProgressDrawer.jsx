@@ -11,47 +11,26 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import ProgressFormModal from "./ProgressFormModal";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  fetchProgress,
-  saveProgress,
-} from "../../../../features/progress/progressSlice";
+import { fetchProgress, clearProgress } from "../../../../features/projects/progress/progressSlice";
 
 export default function ProgressDrawer({ open, onClose, task }) {
   const dispatch = useDispatch();
-  const { list: progressList = [], loading } = useSelector(
-    (s) => s.progress || {}
-  );
+
+  const list = useSelector((state) => state.progress.list);
+  const loading = useSelector((state) => state.progress.loading);
+
   const [openModal, setOpenModal] = useState(false);
 
   useEffect(() => {
-    if (task) dispatch(fetchProgress(task.id));
-  }, [dispatch, task]);
+    if (task?.id) {
+      dispatch(clearProgress());
+      dispatch(fetchProgress(task.id));
+    }
+  }, [dispatch, task?.id]);
 
   if (!task) return null;
 
   const isSubTask = !!task.parentTaskId;
-
-  const handleSaveProgress = async (data) => {
-    try {
-      await dispatch(
-        saveProgress({
-          project_id: task.project_id,
-          task_id: task.id,
-          progress_date: data.progress_date,
-          progress_quantity: parseFloat(data.progress_quantity || 0),
-          progress_percentage: parseFloat(data.progress_percentage || 0),
-          remarks: data.remarks,
-          location: data.location,
-          status: 1,
-          created_by: 1, // replace with user id
-        })
-      ).unwrap();
-
-      setOpenModal(false);
-    } catch (err) {
-      console.error("Error saving progress:", err);
-    }
-  };
 
   return (
     <>
@@ -62,6 +41,7 @@ export default function ProgressDrawer({ open, onClose, task }) {
         PaperProps={{ sx: { width: 520 } }}
       >
         <Box p={3} height="100%" display="flex" flexDirection="column">
+          {/* Header */}
           <Box display="flex" justifyContent="space-between">
             <Typography variant="h6">
               {isSubTask ? task.sub_task_name : task.task_name}
@@ -73,22 +53,23 @@ export default function ProgressDrawer({ open, onClose, task }) {
 
           <Divider sx={{ my: 2 }} />
 
+          {/* Body */}
           <Box flex={1} overflow="auto">
             {loading && <CircularProgress />}
 
-            {progressList.length === 0 && !loading && (
+            {!loading && list.length === 0 && (
               <Typography color="text.secondary" align="center" mt={4}>
                 No Progress Update Added
               </Typography>
             )}
 
-            {progressList.map((p) => (
+            {list.map((p) => (
               <Box
                 key={p.id}
                 sx={{ p: 2, mb: 1, borderRadius: 2, bgcolor: "#f5f5f5" }}
               >
                 <Typography fontWeight={600}>
-                  {p.progress_quantity} {p.location} — {p.progress_percentage}%
+                  {p.progress_quantity}%
                 </Typography>
                 <Typography variant="body2">{p.remarks}</Typography>
                 <Typography variant="caption" color="text.secondary">
@@ -98,7 +79,8 @@ export default function ProgressDrawer({ open, onClose, task }) {
             ))}
           </Box>
 
-          <Box display="flex" gap={1}>
+          {/* Footer */}
+          <Box>
             <Button variant="contained" onClick={() => setOpenModal(true)}>
               + Progress
             </Button>
@@ -109,7 +91,8 @@ export default function ProgressDrawer({ open, onClose, task }) {
       <ProgressFormModal
         open={openModal}
         onClose={() => setOpenModal(false)}
-        onSave={handleSaveProgress}
+        projectId={task.project_id}
+        taskId={task.id}
       />
     </>
   );

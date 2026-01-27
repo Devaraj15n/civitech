@@ -53,11 +53,12 @@ export default function ProjectList() {
       setOpen(false);
       setEditData(null);
 
-      dispatch(fetchProjects()); // 🔁 refresh table
+      await dispatch(fetchProjects()).unwrap(); // 🔁 refresh table
     } catch (err) {
       showError(err);
     }
   };
+
 
   // ✅ Handle delete
   // const handleDelete = async (id) => {

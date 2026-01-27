@@ -45,3 +45,28 @@ exports.remove = (service) => async (req, res, next) => {
         next(err);
     }
 };
+
+// backend/controllers/base.controller.js
+
+exports.findByField = (service, fieldName) => async (req, res, next) => {
+    try {
+        const value = req.params[fieldName];
+
+        if (!value) {
+            return res.status(400).json({
+                success: false,
+                message: `${fieldName} is required`,
+            });
+        }
+
+        const result = await service.findByField(
+            fieldName,
+            value,
+            req.user
+        );
+
+        res.json({ success: true, data: result });
+    } catch (err) {
+        next(err);
+    }
+};

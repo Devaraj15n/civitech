@@ -8,7 +8,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
-import { saveProject } from "../../../features/projects/projectSlice";
+import { saveProject, fetchProjects } from "../../../features/projects/projectSlice";
 
 export default function ProjectForm({ data, onClose, onSave }) {
   const dispatch = useDispatch();
@@ -58,6 +58,41 @@ export default function ProjectForm({ data, onClose, onSave }) {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+
+  //   const payload = {
+  //     ...form,
+  //     client_id: user?.client_id || 1,
+  //     created_by: user?.id || 1,
+  //     updated_by: user?.id || 1,
+  //     project_value: form.project_value ? Number(form.project_value) : 0,
+  //     attendance_radius: form.attendance_radius ? Number(form.attendance_radius) : 0,
+  //     status: Number(form.status),
+  //     id: data?.id, // include id if editing
+  //   };
+
+  //   // dispatch(saveProject(payload)); // ✅ slice-friendly
+  //   // if (onSave) onSave(payload);
+  //   // onClose();
+
+  //   try {
+  //     await dispatch(saveProject(payload)).unwrap();
+  //     showSuccess({
+  //       data: {
+  //         message: data
+  //           ? "Project updated successfully"
+  //           : "Project created successfully",
+  //       },
+  //     });
+
+  //     await dispatch(fetchProjects()).unwrap();
+  //     onClose();
+  //   } catch (err) {
+  //     console.error("Save failed", err);
+  //   }
+  // };
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -67,15 +102,17 @@ export default function ProjectForm({ data, onClose, onSave }) {
       created_by: user?.id || 1,
       updated_by: user?.id || 1,
       project_value: form.project_value ? Number(form.project_value) : 0,
-      attendance_radius: form.attendance_radius ? Number(form.attendance_radius) : 0,
+      attendance_radius: form.attendance_radius
+        ? Number(form.attendance_radius)
+        : 0,
       status: Number(form.status),
-      id: data?.id, // include id if editing
+      id: data?.id,
     };
 
-    dispatch(saveProject(payload)); // ✅ slice-friendly
-    if (onSave) onSave(payload);
-    onClose();
+    // ✅ ONLY THIS
+    onSave(payload);
   };
+
 
   return (
     <Box component="form" p={3} onSubmit={handleSubmit}>

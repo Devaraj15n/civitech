@@ -12,7 +12,7 @@ import workforceTypeReducer from "../features/masters/workforceType/workforceTyp
 import projectReducer from "../features/projects/projectSlice";
 import projectTaskReducer from "../features/projects/tasks/taskSlice";
 import subTaskReducer from "../features/projects/subtasks/subTaskSlice";
-import progressReducer from "../features/progress/progressSlice"; // ✅ import
+import progressReducer from "../features/projects/progress/progressSlice";
 
 
 
