@@ -31,6 +31,7 @@ router.use("/projects", require("./project/projectMaster.routes"));
 router.use("/tasks", require("./project/TaskMaster.routes"));
 router.use("/sub-tasks", require("./project/SubTask.routes"));
 router.use("/project-progress", require("./project/ProgressTracking.routes"));
+router.use("/sub-task-progress", require("./project/SubTaskProgressTracking.routes"));
 
 
 // Dashboard Routes

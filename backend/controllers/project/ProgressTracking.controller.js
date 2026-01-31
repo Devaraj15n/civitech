@@ -6,4 +6,4 @@ exports.findAll = base.findAll(service);
 exports.findById = base.findById(service);
 exports.update = base.update(service);
 exports.remove = base.remove(service);
-exports.findByTaskId = base.findByField(service, "taskId");
+exports.findByTaskId = base.findByField(service, "task_id");

@@ -2,12 +2,17 @@
 
 exports.create = (service) => async (req, res, next) => {
     try {
-        const result = await service.create(req.body, req.user); // <== pass req.user here
+        const result = await service.create(
+            req.body,
+            req.user,
+            req.files || []
+        );
         res.status(201).json({ success: true, data: result });
     } catch (err) {
         next(err);
     }
 };
+
 
 exports.findAll = (service) => async (req, res, next) => {
     try {
@@ -30,12 +35,18 @@ exports.findById = (service) => async (req, res, next) => {
 
 exports.update = (service) => async (req, res, next) => {
     try {
-        const result = await service.update(req.params.id, req.body, req.user); // <== pass req.user here
+        const result = await service.update(
+            req.params.id,
+            req.body,
+            req.user,
+            req.files || []
+        );
         res.json({ success: true, data: result });
     } catch (err) {
         next(err);
     }
 };
+
 
 exports.remove = (service) => async (req, res, next) => {
     try {

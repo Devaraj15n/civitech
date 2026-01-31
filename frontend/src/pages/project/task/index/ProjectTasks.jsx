@@ -29,14 +29,13 @@ export default function ProjectTasks() {
       {/* ✅ PASS PROP HERE */}
       <TaskToolbar onAddTask={handleOpenTaskDrawer} />
 
-      
 
       <TaskTable projectId={projectId}/>
 
       <TaskDrawer
         open={openTaskDrawer}
         onClose={handleCloseTaskDrawer}
-        projectId={projectId}  // ✅ FIX
+        projectId={projectId}
       />
     </Box>
   );

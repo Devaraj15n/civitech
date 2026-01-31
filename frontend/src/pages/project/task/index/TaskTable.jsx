@@ -20,14 +20,14 @@ export default function TaskTable({ projectId }) {
   const dispatch = useDispatch();
   const { list: tasks = [], loading } = useSelector((s) => s.projectTask);
 
+  // Drawers & selected task state
   const [openTaskDrawer, setOpenTaskDrawer] = useState(false);
   const [openSubTaskDrawer, setOpenSubTaskDrawer] = useState(false);
-
   const [selectedTask, setSelectedTask] = useState(null);
   const [parentTask, setParentTask] = useState(null);
-
   const [openProgress, setOpenProgress] = useState(false);
 
+  // Fetch tasks on mount or project change
   useEffect(() => {
     if (projectId) dispatch(fetchTasks(projectId));
   }, [dispatch, projectId]);
@@ -44,12 +44,10 @@ export default function TaskTable({ projectId }) {
     setOpenSubTaskDrawer(true);
   };
 
-  const handleOpenProgress = (data) => {
-    setSelectedTask(data);
+  const handleOpenProgress = (task, parentProjectId = null) => {
+    setSelectedTask({ ...task, project_id: task.project_id || parentProjectId });
     setOpenProgress(true);
   };
-
-  if (loading) return <CircularProgress />;
 
   return (
     <>
@@ -62,22 +60,36 @@ export default function TaskTable({ projectId }) {
               <TableCell>Duration</TableCell>
               <TableCell>Start Date</TableCell>
               <TableCell>End Date</TableCell>
-              {/* <TableCell>Progress</TableCell> */}
+              <TableCell>Progress</TableCell>
               <TableCell>Status</TableCell>
               <TableCell />
             </TableRow>
           </TableHead>
 
           <TableBody>
-            {tasks.map((task, index) => (
-              <TaskRow
-                key={task.id}
-                task={task}
-                index={index + 1}
-                onAddSubTaskClick={handleAddSubTask}
-                onOpenProgress={handleOpenProgress}
-              />
-            ))}
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={8} align="center">
+                  <CircularProgress />
+                </TableCell>
+              </TableRow>
+            ) : tasks.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={8} align="center">
+                  No tasks found
+                </TableCell>
+              </TableRow>
+            ) : (
+              tasks.map((task, index) => (
+                <TaskRow
+                  key={task.id}
+                  task={task}
+                  index={index + 1}
+                  onAddSubTaskClick={handleAddSubTask}
+                  onOpenProgress={handleOpenProgress}
+                />
+              ))
+            )}
           </TableBody>
         </Table>
       </Paper>
@@ -97,11 +109,13 @@ export default function TaskTable({ projectId }) {
         parentTask={parentTask}
       />
 
-      {/* PROGRESS */}
+      {/* PROGRESS DRAWER */}
       <ProgressDrawer
         open={openProgress}
         onClose={() => setOpenProgress(false)}
         task={selectedTask}
+        isSubtask={!!selectedTask?.parentTaskId}
+        parentTaskId={selectedTask?.parentTaskId || null}
       />
     </>
   );
