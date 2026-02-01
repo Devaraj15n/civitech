@@ -1,4 +1,6 @@
 const base = require("../base.service");
+const path = require("path");
+
 const {
     sequelize,
     progress_tracking: ProgressTracking,
@@ -9,6 +11,9 @@ const { Sequelize } = require("sequelize");
 module.exports = {
     /* ================= CREATE ================= */
     create: async (data, user, files = []) => {
+
+        console.log("files---------");
+        console.log(files);
         if (!user?.id || !user?.client_id) {
             throw new Error("User context is required");
         }
@@ -32,10 +37,12 @@ module.exports = {
             );
 
             if (files.length > 0) {
+            
+                // const basePath = path.join(__dirname, "..");
                 const filePayload = files.map((file) => ({
                     progress_tracking_id: progress.id,
                     file_name: file.originalname,
-                    file_path: file.path,
+                    file_path: `uploads/progress/${file.filename}`, // 👑 PERFECT
                     file_type: file.mimetype,
                     file_size: file.size,
                     uploaded_by: user.id,
@@ -133,7 +140,7 @@ module.exports = {
                 where: {
                     id,
                     status: 1,
-                    client_id: user.client_id,
+                    // client_id: user.client_id,
                 },
                 transaction: t,
             });
@@ -161,7 +168,7 @@ module.exports = {
                 const filePayload = files.map((file) => ({
                     progress_tracking_id: record.id,
                     file_name: file.originalname,
-                    file_path: file.path,
+                    file_path: `uploads/progress/${file.filename}`, 
                     file_type: file.mimetype,
                     file_size: file.size,
                     uploaded_by: user.id,

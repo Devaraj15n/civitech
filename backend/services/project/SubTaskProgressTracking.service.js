@@ -35,7 +35,7 @@ module.exports = {
                 const filePayload = files.map((file) => ({
                     sub_task_progress_tracking_id: progress.id,
                     file_name: file.originalname,
-                    file_path: file.path,
+                    file_path: `uploads/progress/${file.filename}`, 
                     file_type: file.mimetype,
                     file_size: file.size,
                     uploaded_by: user.id,
@@ -133,7 +133,7 @@ module.exports = {
                 where: {
                     id,
                     status: 1,
-                    client_id: user.client_id,
+                    // client_id: user.client_id,
                 },
                 transaction: t,
             });
@@ -161,7 +161,7 @@ module.exports = {
                 const filePayload = files.map((file) => ({
                     sub_task_progress_tracking_id: record.id,
                     file_name: file.originalname,
-                    file_path: file.path,
+                     file_path: `uploads/progress/${file.filename}`, 
                     file_type: file.mimetype,
                     file_size: file.size,
                     uploaded_by: user.id,
@@ -179,6 +179,9 @@ module.exports = {
 
     /* ================= SOFT DELETE ================= */
     remove: async (id, user) => {
+        console.log("test");
+        console.log(user);
+        
         if (!user?.id || !user?.client_id) {
             throw new Error("User context is required");
         }
@@ -191,7 +194,7 @@ module.exports = {
             {
                 where: {
                     id,
-                    client_id: user.client_id,
+                    // client_id: user.client_id,
                 },
             }
         );

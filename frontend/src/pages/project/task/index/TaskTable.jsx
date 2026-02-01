@@ -44,10 +44,28 @@ export default function TaskTable({ projectId }) {
     setOpenSubTaskDrawer(true);
   };
 
-  const handleOpenProgress = (task, parentProjectId = null) => {
-    setSelectedTask({ ...task, project_id: task.project_id || parentProjectId });
+  const handleEditTask = (task) => {
+  setSelectedTask(task);     // 👈 pass task as editData
+  setOpenTaskDrawer(true);   // 👈 open drawer
+};
+
+  const handleOpenProgress = (
+    task,
+    {
+      isSubtask = false,
+      parentTaskId = null,
+      projectId = null,
+    } = {}
+  ) => {
+    setSelectedTask({
+      ...task,
+      parentTaskId,
+      project_id: projectId,
+    });
+
     setOpenProgress(true);
   };
+
 
   return (
     <>
@@ -87,6 +105,7 @@ export default function TaskTable({ projectId }) {
                   index={index + 1}
                   onAddSubTaskClick={handleAddSubTask}
                   onOpenProgress={handleOpenProgress}
+                  onEditTaskClick={handleEditTask}
                 />
               ))
             )}

@@ -14,7 +14,11 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchSubTasks, deleteSubTask } from "../../../../features/projects/subtasks/subTaskSlice";
 
-export default function SubTaskTable({ taskId, onOpenProgress }) {
+export default function SubTaskTable({ taskId,parentProjectId, onOpenProgress }) {
+
+  console.log("parentProjectId from subtask");
+  console.log(parentProjectId);
+  //  parentProjectId={task.project_id}
   const dispatch = useDispatch();
 
   const { byTask, loading } = useSelector((s) => s.projectSubTask);
@@ -70,7 +74,13 @@ export default function SubTaskTable({ taskId, onOpenProgress }) {
                 size="small"
                 label={`${st?.progress_percentage ?? 0}%`}
                 clickable
-                onClick={() => onOpenProgress?.(st)}
+                onClick={() =>
+                  onOpenProgress(st, {
+                    isSubtask: true,
+                    parentTaskId: taskId,   
+                    projectId:parentProjectId   
+                  })
+                }
               />
             </TableCell>
 

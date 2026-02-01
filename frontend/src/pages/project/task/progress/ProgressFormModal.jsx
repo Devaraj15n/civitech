@@ -31,6 +31,15 @@ export default function ProgressFormModal({
   editData,
   parentTaskId, // optional: for updating main task after subtask progress
 }) {
+
+  if (!projectId) {
+  console.error("❌ projectId missing in ProgressFormModal");
+  return;
+}
+
+  console.log("projectId====");
+  console.log(projectId);
+  
   const dispatch = useDispatch();
   const loading = useSelector((s) => s.progress.loading);
 
@@ -73,48 +82,49 @@ export default function ProgressFormModal({
   };
 
   const handleSubmit = async () => {
-    // if (!form.progress_quantity) return showError("Progress quantity is required");
-    // if (!projectId || !taskId) return showError("Project ID or Task ID missing");
-
     try {
-      const result = await dispatch(
+      const formData = new FormData();
+
+      if (editData?.id) {
+        formData.append("id", editData.id);
+      }
+
+      formData.append("project_id", projectId);
+      formData.append("task_id", taskId);
+
+      if (isSubtask) {
+        formData.append("sub_task_id", taskId); // 👈 IMPORTANT
+      }
+
+      formData.append("progress_date", form.progress_date);
+      formData.append("progress_quantity", Number(form.progress_quantity));
+      formData.append("progress_percentage", Number(form.progress_quantity));
+      formData.append("remarks", form.remarks || "");
+
+      form.files.forEach((file) => {
+        formData.append("files", file);
+      });
+
+      await dispatch(
         saveProgress({
-          data: {
-            id: editData?.id,
-            project_id: projectId,
-            task_id: taskId,
-            progress_date: form.progress_date,
-            progress_quantity: Number(form.progress_quantity),
-            progress_percentage: Number(form.progress_quantity),
-            remarks: form.remarks || null,
-            files: form.files,
-          },
+          data: formData,
+          taskId,        // ✅ pass separately
           isSubtask,
         })
       ).unwrap();
 
-
-      // ✅ Refetch using correct key
       dispatch(fetchProgress({ taskId, isSubtask }));
 
-      // ✅ If subtask, update main task aggregated progress
       if (isSubtask && parentTaskId) {
         dispatch(fetchTaskProgress({ taskId: parentTaskId }));
       }
 
-      showSuccess({
-        data: {
-          message: editData ? "Progress updated successfully" : "Progress added successfully",
-        },
-      });
-
       onClose();
-      setForm((prev) => ({ ...prev, files: [] }));
     } catch (err) {
-      console.error("Save Progress Error:", err);
-      // showError(err.response?.data || "Something went wrong");
+      console.error(err);
     }
   };
+
 
 
   return (

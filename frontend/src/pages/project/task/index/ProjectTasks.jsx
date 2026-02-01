@@ -19,11 +19,6 @@ export default function ProjectTasks() {
     setOpenTaskDrawer(false);
   };
 
-        console.log("projectId");
-        console.log(projectId);
-
-
-
   return (
     <Box>
       {/* ✅ PASS PROP HERE */}

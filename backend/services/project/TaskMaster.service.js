@@ -102,7 +102,7 @@ module.exports = {
     const record = await Task.findOne({
       where: {
         id,
-        client_id: user.client_id,
+        // client_id: user.client_id,
         status: 1,
       },
     });

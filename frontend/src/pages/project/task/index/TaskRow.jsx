@@ -22,6 +22,7 @@ export default function TaskRow({
   index,
   onOpenProgress,
   onAddSubTaskClick,
+  onEditTaskClick,
 }) {
   const [anchorEl, setAnchorEl] = useState(null);
   const [open, setOpen] = useState(false);
@@ -30,7 +31,10 @@ export default function TaskRow({
 
   // Open progress for main task
   const handleProgressClick = (taskData) => {
-    onOpenProgress(taskData, taskData.project_id); // pass project_id for main task
+    onOpenProgress(taskData, {
+      isSubtask: false,
+      projectId: taskData.project_id,
+    });
   };
 
   return (
@@ -84,6 +88,17 @@ export default function TaskRow({
             open={Boolean(anchorEl)}
             onClose={() => setAnchorEl(null)}
           >
+            {/* ✏️ EDIT TASK */}
+            <MenuItem
+              onClick={() => {
+                setAnchorEl(null);
+                onEditTaskClick(task);
+              }}
+            >
+              ✏️ Edit Task
+            </MenuItem>
+
+            {/* ➕ ADD SUBTASK */}
             <MenuItem
               onClick={() => {
                 setAnchorEl(null);
@@ -93,6 +108,7 @@ export default function TaskRow({
               + Add Subtask
             </MenuItem>
           </Menu>
+
         </TableCell>
       </TableRow>
 
