@@ -52,6 +52,12 @@ module.exports = (sequelize, DataTypes) => {
                 defaultValue: "Pending",
             },
 
+            progress_percentage: {
+                type: DataTypes.DECIMAL(5, 2),
+                allowNull: true,
+                defaultValue: 0.0,
+            },
+
             status: {
                 type: DataTypes.TINYINT(1),
                 defaultValue: 1,

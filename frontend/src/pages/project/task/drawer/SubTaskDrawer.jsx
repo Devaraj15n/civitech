@@ -38,10 +38,22 @@ export default function SubTaskDrawer({ open, onClose, parentTask }) {
       return;
     }
 
+    if (form.start_date && form.end_date && form.end_date < form.start_date) {
+      showError("End date cannot be before start date");
+      return;
+    }
+
+    if (form.duration_days && form.duration_days <= 0) {
+      showError("Duration must be greater than 0");
+      return;
+    }
+
+
     try {
       await dispatch(
         saveSubTask({
-          task_id: parentTask.id, // 🔥 KEY DIFFERENCE
+          project_id: parentTask.project_id,
+          task_id: parentTask.id,
           ...form,
           created_by: user?.id || 1,
           updated_by: user?.id || 1,

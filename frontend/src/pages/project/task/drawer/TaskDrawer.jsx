@@ -10,6 +10,7 @@ import {
   MenuItem,
   Stack,
 } from "@mui/material";
+import InputAdornment from "@mui/material/InputAdornment";
 import CloseIcon from "@mui/icons-material/Close";
 import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
 import { useDispatch, useSelector } from "react-redux";
@@ -49,6 +50,7 @@ export default function TaskDrawer({ open, onClose, projectId, editData }) {
     end_date: "",
     quantity: "",
     unit: "",
+    progress_percentage: 0,
     assigned_to: [],
     task_status: "Pending",
     status: 1,
@@ -105,18 +107,20 @@ export default function TaskDrawer({ open, onClose, projectId, editData }) {
     const payload = {
       project_id: projectId,
       task_name: form.task_name,
-      start_date: form.start_date,
-      end_date: form.end_date,
-      quantity: form.quantity,
-      unit: form.unit,
+      start_date: form.start_date || null,
+      end_date: form.end_date || null,
+      quantity: form.quantity || null,
+      unit: form.unit || null,
       duration_days: Number(form.duration_days),
-      assigned_to: form.assigned_to, // ✅ ARRAY
+      progress_percentage: 0,
+      assigned_to: form.assigned_to,
       task_status: form.task_status,
       status: 1,
       created_by: user?.id,
       updated_by: user?.id,
       id: editData?.id,
     };
+
 
     try {
       await dispatch(saveTask(payload)).unwrap();
@@ -131,6 +135,18 @@ export default function TaskDrawer({ open, onClose, projectId, editData }) {
 
       dispatch(fetchTasks(projectId));
       onClose();
+      setForm({
+        task_name: "",
+        duration_days: "",
+        start_date: "",
+        end_date: "",
+        quantity: "",
+        unit: "",
+        assigned_to: [],
+        task_status: "Pending",
+        status: 1,
+      });
+
     } catch (err) {
       showError(err);
     }
@@ -202,8 +218,13 @@ export default function TaskDrawer({ open, onClose, projectId, editData }) {
               fullWidth
               InputLabelProps={{ shrink: true }}
               InputProps={{
-                startAdornment: <CalendarTodayOutlinedIcon sx={{ mr: 1 }} />,
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <CalendarTodayOutlinedIcon fontSize="small" />
+                  </InputAdornment>
+                ),
               }}
+
             />
             <TextField
               label="End Date"
@@ -239,7 +260,7 @@ export default function TaskDrawer({ open, onClose, projectId, editData }) {
             onChange={handleChange}
             fullWidth
           >
-            {["%","kg", "ltr", "pcs", "bag", "m", "m²", "m³", "ton", "box"].map(
+            {["%", "kg", "ltr", "pcs", "bag", "m", "m²", "m³", "ton", "box"].map(
               (unit) => (
                 <MenuItem key={unit} value={unit}>
                   {unit}

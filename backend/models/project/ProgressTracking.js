@@ -18,13 +18,6 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
 
-      is_subtask: {
-        type: DataTypes.TINYINT(1),
-        allowNull: false,
-        defaultValue: 0, // 0 = main task, 1 = subtask
-        comment: "Indicates if progress is for a subtask",
-      },
-
       progress_date: {
         type: DataTypes.DATEONLY,
         allowNull: false,
@@ -54,20 +47,17 @@ module.exports = (sequelize, DataTypes) => {
       status: {
         type: DataTypes.TINYINT(1),
         allowNull: false,
-        defaultValue: 1, // 1 = active, 0 = inactive
+        defaultValue: 1,
       },
 
-      /** Audit fields */
       created_by: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        comment: "User ID who created the record",
       },
 
       updated_by: {
         type: DataTypes.INTEGER,
         allowNull: true,
-        comment: "User ID who last updated the record",
       },
     },
     {
@@ -83,19 +73,9 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: "project_id",
     });
 
-    // Optional polymorphic association
     ProgressTracking.belongsTo(models.task_master, {
       foreignKey: "task_id",
-      constraints: false,
       as: "task",
-      scope: { is_subtask: 0 }, // only main tasks
-    });
-
-    ProgressTracking.belongsTo(models.sub_task, {
-      foreignKey: "task_id",
-      constraints: false,
-      as: "subtask",
-      scope: { is_subtask: 1 }, // only subtasks
     });
 
     ProgressTracking.belongsTo(models.user_master, {
@@ -107,6 +87,12 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: "updated_by",
       as: "updater",
     });
+
+    ProgressTracking.hasMany(models.progress_tracking_files, {
+      foreignKey: "progress_tracking_id",
+      as: "files",
+    });
+
   };
 
   return ProgressTracking;

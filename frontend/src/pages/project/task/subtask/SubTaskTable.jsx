@@ -12,24 +12,21 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  fetchSubTasks,
-  deleteSubTask,
-} from "../../../../features/projects/subtasks/subTaskSlice";
+import { fetchSubTasks, deleteSubTask } from "../../../../features/projects/subtasks/subTaskSlice";
 
 export default function SubTaskTable({ taskId, onOpenProgress }) {
   const dispatch = useDispatch();
 
   const { byTask, loading } = useSelector((s) => s.projectSubTask);
-  const subTasks = byTask[taskId];
+  const subTasks = byTask?.[taskId] || [];
 
   useEffect(() => {
-    if (!subTasks) {
+    if (taskId && subTasks.length === 0) {
       dispatch(fetchSubTasks(taskId));
     }
-  }, [dispatch, taskId, subTasks]);
+  }, [dispatch, taskId, subTasks.length]);
 
-  if (loading && !subTasks) {
+  if (loading && subTasks.length === 0) {
     return (
       <Typography align="center" sx={{ p: 2 }}>
         <CircularProgress size={20} />
@@ -37,7 +34,7 @@ export default function SubTaskTable({ taskId, onOpenProgress }) {
     );
   }
 
-  if (!subTasks?.length) {
+  if (subTasks.length === 0) {
     return (
       <Typography variant="body2" sx={{ p: 2, color: "text.secondary" }}>
         No subtasks available
@@ -60,20 +57,20 @@ export default function SubTaskTable({ taskId, onOpenProgress }) {
       </TableHead>
 
       <TableBody>
-        {subTasks.map((st,index) => (
+        {subTasks.map((st, index) => (
           <TableRow key={st.id} hover>
-            <TableCell>{++index}</TableCell>
-            <TableCell>{st.sub_task_name}</TableCell>
-            <TableCell>{st.duration_days}</TableCell>
-            <TableCell>{st.start_date}</TableCell>
-            <TableCell>{st.end_date}</TableCell>
+            <TableCell>{index + 1}</TableCell>
+            <TableCell>{st?.sub_task_name || "N/A"}</TableCell>
+            <TableCell>{st?.duration_days ?? "-"}</TableCell>
+            <TableCell>{st?.start_date || "-"}</TableCell>
+            <TableCell>{st?.end_date || "-"}</TableCell>
 
             <TableCell>
               <Chip
                 size="small"
-                label={`${st.progress_percentage || 0}%`}
+                label={`${st?.progress_percentage ?? 0}%`}
                 clickable
-                onClick={() => onOpenProgress(st)}
+                onClick={() => onOpenProgress?.(st)}
               />
             </TableCell>
 
@@ -81,7 +78,7 @@ export default function SubTaskTable({ taskId, onOpenProgress }) {
               <IconButton
                 size="small"
                 color="error"
-                onClick={() => dispatch(deleteSubTask(st.id))}
+                onClick={() => st?.id && dispatch(deleteSubTask(st.id))}
               >
                 <DeleteIcon fontSize="small" />
               </IconButton>

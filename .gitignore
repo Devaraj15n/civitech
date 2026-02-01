@@ -21,6 +21,7 @@ backend/node_modules/
 backend/node_modules/.cache/
 backend/config/database.js/
 backend/.env
+backend/uploads/
 
 
 

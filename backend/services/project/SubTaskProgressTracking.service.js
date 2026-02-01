@@ -1,8 +1,8 @@
 const base = require("../base.service");
 const {
     sequelize,
-    progress_tracking: ProgressTracking,
-    progress_tracking_files: ProgressTrackingFiles,
+    sub_task_progress_tracking: SubTaskProgressTracking,
+    sub_task_progress_tracking_files: SubTaskProgressTrackingFiles,
 } = require("../../models");
 const { Sequelize } = require("sequelize");
 
@@ -14,10 +14,10 @@ module.exports = {
         }
 
         return sequelize.transaction(async (t) => {
-            const progress = await ProgressTracking.create(
+            const progress = await SubTaskProgressTracking.create(
                 {
                     project_id: data.project_id,
-                    task_id: data.task_id,
+                    sub_task_id: data.sub_task_id,
                     progress_date: data.progress_date,
                     progress_quantity: data.progress_quantity,
                     progress_percentage: data.progress_percentage ?? 0.0,
@@ -33,7 +33,7 @@ module.exports = {
 
             if (files.length > 0) {
                 const filePayload = files.map((file) => ({
-                    progress_tracking_id: progress.id,
+                    sub_task_progress_tracking_id: progress.id,
                     file_name: file.originalname,
                     file_path: file.path,
                     file_type: file.mimetype,
@@ -42,7 +42,7 @@ module.exports = {
                     status: 1,
                 }));
 
-                await ProgressTrackingFiles.bulkCreate(filePayload, {
+                await SubTaskProgressTrackingFiles.bulkCreate(filePayload, {
                     transaction: t,
                 });
             }
@@ -57,7 +57,7 @@ module.exports = {
             throw new Error("Client ID is required");
         }
 
-        return ProgressTracking.findAll({
+        return SubTaskProgressTracking.findAll({
             where: {
                 ...query,
                 status: 1,
@@ -65,7 +65,7 @@ module.exports = {
             },
             include: [
                 {
-                    model: ProgressTrackingFiles,
+                    model: SubTaskProgressTrackingFiles,
                     as: "files",
                     where: { status: 1 },
                     required: false,
@@ -81,7 +81,7 @@ module.exports = {
             throw new Error("Client ID is required");
         }
 
-        return ProgressTracking.findOne({
+        return SubTaskProgressTracking.findOne({
             where: {
                 id,
                 status: 1,
@@ -89,7 +89,7 @@ module.exports = {
             },
             include: [
                 {
-                    model: ProgressTrackingFiles,
+                    model: SubTaskProgressTrackingFiles,
                     as: "files",
                     where: { status: 1 },
                     required: false,
@@ -98,21 +98,21 @@ module.exports = {
         });
     },
 
-    /* ================= FIND BY TASK ================= */
+    /* ================= FIND BY SUB TASK ================= */
     findByField: async (field, value, user) => {
         if (!user?.client_id) {
             throw new Error("Client ID is required");
         }
 
-        return ProgressTracking.findAll({
+        return SubTaskProgressTracking.findAll({
             where: {
-                task_id: value,
+                sub_task_id: value,
                 status: 1,
                 // client_id: user.client_id,
             },
             include: [
                 {
-                    model: ProgressTrackingFiles,
+                    model: SubTaskProgressTrackingFiles,
                     as: "files",
                     where: { status: 1 },
                     required: false,
@@ -129,7 +129,7 @@ module.exports = {
         }
 
         return sequelize.transaction(async (t) => {
-            const record = await ProgressTracking.findOne({
+            const record = await SubTaskProgressTracking.findOne({
                 where: {
                     id,
                     status: 1,
@@ -139,13 +139,13 @@ module.exports = {
             });
 
             if (!record) {
-                throw new Error("Progress record not found");
+                throw new Error("Sub-task progress record not found");
             }
 
             await record.update(
                 {
                     project_id: data.project_id ?? record.project_id,
-                    task_id: data.task_id ?? record.task_id,
+                    sub_task_id: data.sub_task_id ?? record.sub_task_id,
                     progress_date: data.progress_date ?? record.progress_date,
                     progress_quantity:
                         data.progress_quantity ?? record.progress_quantity,
@@ -159,7 +159,7 @@ module.exports = {
 
             if (files.length > 0) {
                 const filePayload = files.map((file) => ({
-                    progress_tracking_id: record.id,
+                    sub_task_progress_tracking_id: record.id,
                     file_name: file.originalname,
                     file_path: file.path,
                     file_type: file.mimetype,
@@ -168,7 +168,7 @@ module.exports = {
                     status: 1,
                 }));
 
-                await ProgressTrackingFiles.bulkCreate(filePayload, {
+                await SubTaskProgressTrackingFiles.bulkCreate(filePayload, {
                     transaction: t,
                 });
             }
@@ -183,7 +183,7 @@ module.exports = {
             throw new Error("User context is required");
         }
 
-        return ProgressTracking.update(
+        return SubTaskProgressTracking.update(
             {
                 status: 0,
                 updated_by: user.id,

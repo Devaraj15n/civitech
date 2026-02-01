@@ -8,7 +8,7 @@ import {
   Menu,
   MenuItem,
   Collapse,
-  Tooltip 
+  Tooltip,
 } from "@mui/material";
 
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
@@ -27,6 +27,11 @@ export default function TaskRow({
   const [open, setOpen] = useState(false);
 
   const hasSubTasks = task.subtask_count > 0;
+
+  // Open progress for main task
+  const handleProgressClick = (taskData) => {
+    onOpenProgress(taskData, taskData.project_id); // pass project_id for main task
+  };
 
   return (
     <>
@@ -47,19 +52,13 @@ export default function TaskRow({
         <TableCell>{task.duration_days}</TableCell>
         <TableCell>{task.start_date}</TableCell>
         <TableCell>{task.end_date}</TableCell>
-        {/* <TableCell>{task.end_date}</TableCell> */}
+        <TableCell>{task.progress_percentage}%</TableCell>
 
         {/* 🔒 PROGRESS */}
         <TableCell>
-          {
-          
-          hasSubTasks ? (
+          {hasSubTasks ? (
             <Tooltip title="Progress is tracked via subtasks">
-              <Chip
-                size="small"
-                label={task.task_status}
-                color="default"
-              />
+              <Chip size="small" label={task.task_status} color="default" />
             </Tooltip>
           ) : (
             <Chip
@@ -67,7 +66,7 @@ export default function TaskRow({
               label={task.task_status}
               color="info"
               clickable
-              onClick={() => onOpenProgress(task)}
+              onClick={() => handleProgressClick(task)}
             />
           )}
         </TableCell>
@@ -109,7 +108,11 @@ export default function TaskRow({
                 bgcolor: "#fafafa",
               }}
             >
-              <SubTaskTable taskId={task.id} onOpenProgress={onOpenProgress} />
+              <SubTaskTable
+                taskId={task.id}
+                parentProjectId={task.project_id} // pass parent project_id
+                onOpenProgress={onOpenProgress}
+              />
             </Box>
           </Collapse>
         </TableCell>

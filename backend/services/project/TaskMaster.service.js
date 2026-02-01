@@ -1,4 +1,5 @@
 const base = require("../base.service");
+const { Sequelize } = require("sequelize");
 const { task_master: Task } = require("../../models");
 const { project_master: Project } = require("../../models");
 const { sub_task: SubTask } = require("../../models");
@@ -33,10 +34,12 @@ module.exports = {
       unit: data.unit,
       assigned_to: data.assigned_to,
       task_status: data.task_status ?? "Pending",
+      progress_percentage: data.progress_percentage ?? 0,
       status: 1,
       created_by: user.id,
       updated_by: user.id,
     });
+
   },
 
   /* ================= FIND ALL ================= */
@@ -51,7 +54,7 @@ module.exports = {
           [
             Sequelize.literal(`(
             SELECT COUNT(*)
-            FROM sub_tasks AS st
+            FROM sub_task AS st
             WHERE st.task_id = task_master.id
               AND st.status = 1
           )`),
@@ -108,6 +111,11 @@ module.exports = {
       throw new Error("Task not found");
     }
 
+    if (data.progress_percentage === 100) {
+      data.task_status = "Completed";
+    }
+
+
     return base.update(Task)(id, {
       project_id: data.project_id ?? record.project_id,
       task_name: data.task_name ?? record.task_name,
@@ -116,10 +124,12 @@ module.exports = {
       duration_days: data.duration_days ?? record.duration_days,
       assigned_to: data.assigned_to ?? record.assigned_to,
       task_status: data.task_status ?? record.task_status,
+      progress_percentage:
+        data.progress_percentage ?? record.progress_percentage,
       status: data.status ?? record.status,
-
       updated_by: user.id,
     });
+
   },
 
   /* ================= SOFT DELETE ================= */
