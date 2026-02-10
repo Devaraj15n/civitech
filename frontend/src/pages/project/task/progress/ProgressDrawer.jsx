@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Drawer,
   Box,
@@ -9,16 +9,17 @@ import {
   CircularProgress,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import ProgressFormModal from "./ProgressFormModal";
-import ImagePreview from "./ImagePreview";
-import { useDispatch, useSelector } from "react-redux";
-import { fetchProgress } from "../../../../features/projects/progress/progressSlice";
-import { fetchTaskProgress } from "../../../../features/projects/progress/progressSlice";
-import { deleteProgress } from "../../../../features/projects/progress/progressSlice";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import SendIcon from "@mui/icons-material/Send";
+import ImageIcon from "@mui/icons-material/Image";
+import AttachFileIcon from "@mui/icons-material/AttachFile";
 
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import Tooltip from "@mui/material/Tooltip";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchProgress,
+  fetchTaskProgress,
+  deleteProgress,
+} from "../../../../features/projects/progress/progressSlice";
 
 export default function ProgressDrawer({
   open,
@@ -27,24 +28,16 @@ export default function ProgressDrawer({
   isSubtask,
   parentTaskId,
 }) {
-
-  // console.log("task+++++++++");
-  // console.log(task);
-
-  console.log("isSubtask=====");
-  console.log(isSubtask);
-  const [editData, setEditData] = useState(null);
-
-
   const dispatch = useDispatch();
+
+  const [message, setMessage] = useState("");
+  const [selectedImages, setSelectedImages] = useState([]);
+  const imageInputRef = useRef(null);
 
   const list = useSelector(
     (state) => state.progress.byTask[task?.id] || []
   );
   const loading = useSelector((state) => state.progress.loading);
-
-  const [openModal, setOpenModal] = useState(false);
-  const [preview, setPreview] = useState({ open: false, src: "" });
 
   useEffect(() => {
     if (!open || !task?.id) return;
@@ -56,186 +49,166 @@ export default function ProgressDrawer({
     }
   }, [open, task?.id, isSubtask, parentTaskId, dispatch]);
 
+  // ✅ SEND HANDLER
+  const handleSend = () => {
+    if (!message.trim()) return;
 
-  const handleDeleteProgress = async (progressId) => {
-    if (!window.confirm("Delete this progress update?")) return;
+    console.log("SEND MESSAGE:", message);
+    console.log("IMAGES:", selectedImages);
 
+    // 🔥 API / dispatch call goes here
 
-    console.log("isSubtask from delte progress");
-    console.log(isSubtask);
-    
-    try {
-      await dispatch(
-        deleteProgress({ id: progressId, taskId: task.id, isSubtask })
-      ).unwrap();
-
-      dispatch(fetchProgress({ taskId: task.id, isSubtask }));
-
-      if (isSubtask && parentTaskId) {
-        dispatch(fetchTaskProgress({ taskId: parentTaskId }));
-      }
-    } catch (err) {
-      console.error("Delete failed", err);
-    }
+    setMessage("");
+    setSelectedImages([]);
   };
 
-
   return (
-    <>
-      <Drawer
-        anchor="right"
-        open={open}
-        onClose={onClose}
-        PaperProps={{ sx: { width: 520 } }}
-      >
-        <Box p={3} height="100%" display="flex" flexDirection="column">
-          {/* Header */}
-          <Box display="flex" justifyContent="space-between">
-            <Typography variant="h6">
-              {isSubtask ? task?.sub_task_name : task?.task_name || "Task"}
+    <Drawer
+      anchor="right"
+      open={open}
+      onClose={onClose}
+      PaperProps={{ sx: { width: 520 } }}
+    >
+      <Box p={3} height="100%" display="flex" flexDirection="column">
+        {/* HEADER */}
+        <Box display="flex" justifyContent="space-between">
+          <Typography variant="h6">
+            {isSubtask ? task?.sub_task_name : task?.task_name}
+          </Typography>
+          <IconButton onClick={onClose}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
+
+        <Divider sx={{ my: 2 }} />
+
+        {/* BODY */}
+        <Box flex={1} overflow="auto">
+          {loading && <CircularProgress />}
+
+          {!loading && list.length === 0 && (
+            <Typography align="center" mt={4} color="text.secondary">
+              No Progress Update Added
             </Typography>
-            <IconButton onClick={onClose}>
-              <CloseIcon />
-            </IconButton>
-          </Box>
+          )}
 
-          <Divider sx={{ my: 2 }} />
+          {list.map((p) => (
+            <Box
+              key={p.id}
+              sx={{
+                p: 2,
+                mb: 2,
+                bgcolor: "#f5f5f5",
+                borderRadius: 2,
+              }}
+            >
+              <Typography fontWeight={600}>{p.progress_quantity}%</Typography>
+              <Typography variant="body2">{p.remarks}</Typography>
+              <Typography variant="caption">{p.progress_date}</Typography>
+            </Box>
+          ))}
+        </Box>
 
-          {/* Body */}
-          <Box flex={1} overflow="auto">
-            {loading && <CircularProgress />}
+        {/* FOOTER */}
+        <Box
+          sx={{
+            borderTop: "1px solid #e0e0e0",
+            pt: 2,
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+          }}
+        >
+          {/* 🔁 DEFAULT MODE */}
+          {message.length === 0 ? (
+            <>
+              <Button variant="contained">+ Progress</Button>
 
-            {!loading && list.length === 0 && (
-              <Typography align="center" color="text.secondary" mt={4}>
-                No Progress Update Added
-              </Typography>
-            )}
-
-            {list.map((p) => (
               <Box
-                key={p.id}
                 sx={{
-                  p: 2,
-                  mb: 2,
+                  flex: 1,
+                  display: "flex",
+                  alignItems: "center",
+                  border: "1px solid #d0d0d0",
                   borderRadius: 2,
-                  bgcolor: "#f5f5f5",
-                  position: "relative",
+                  px: 1,
+                  height: 44,
                 }}
               >
-                {/* 🔧 Card Actions */}
-                <Box
-                  sx={{
-                    position: "absolute",
-                    top: 6,
-                    right: 6,
-                    display: "flex",
-                    gap: 0.5,
+                <input
+                  placeholder="Enter Message"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  style={{
+                    flex: 1,
+                    border: "none",
+                    outline: "none",
+                    fontSize: 16,
                   }}
-                >
-                  <Tooltip title="Edit">
-                    <IconButton
-                      size="small"
-                      onClick={() => {
-                        setEditData(p);
-                        setOpenModal(true);
-                      }}
-                    >
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
+                />
 
-                  <Tooltip title="Delete">
-                    <IconButton
-                      size="small"
-                      color="error"
-                      onClick={() => handleDeleteProgress(p.id)}
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
+                <IconButton onClick={() => imageInputRef.current.click()}>
+                  <ImageIcon />
+                </IconButton>
 
-                <Typography fontWeight={600}>
-                  {p.progress_quantity}%
-                </Typography>
-
-                <Typography variant="body2" sx={{ mb: 1 }}>
-                  {p.remarks}
-                </Typography>
-
-                <Typography variant="caption" color="text.secondary">
-                  {p.progress_date}
-                </Typography>
-
-
-                {p.files?.length > 0 && (
-                  <Box mt={1} display="flex" gap={1} flexWrap="wrap">
-                    {p.files.map((file) => {
-                      const imgUrl = `${import.meta.env.VITE_API_URL}/${file.file_path}`;
-
-                      return (
-                        <Box
-                          key={file.id}
-                          component="img"
-                          src={imgUrl}
-                          alt={file.file_name}
-                          sx={{
-                            width: 80,
-                            height: 80,
-                            borderRadius: 1,
-                            objectFit: "cover",
-                            cursor: "pointer",
-                            border: "1px solid #ddd",
-                            "&:hover": {
-                              transform: "scale(1.05)",
-                              boxShadow: 2,
-                            },
-                          }}
-                          onClick={() =>
-                            setPreview({ open: true, src: imgUrl })
-                          }
-                        />
-                      );
-                    })}
-                  </Box>
-                )}
+                <IconButton>
+                  <AttachFileIcon />
+                </IconButton>
               </Box>
-            )
-            )
-            }
-          </Box>
+            </>
+          ) : (
+            /* ✨ TYPING MODE */
+            <>
+              <IconButton onClick={() => setMessage("")}>
+                <ArrowBackIcon />
+              </IconButton>
 
-          {/* Footer */}
-          <Box>
-            <Button variant="contained" onClick={() => setOpenModal(true)}>
-              + Progress
-            </Button>
-          </Box>
+              <Box
+                sx={{
+                  flex: 1,
+                  display: "flex",
+                  alignItems: "center",
+                  border: "1px solid #d0d0d0",
+                  borderRadius: 2,
+                  px: 1,
+                  height: 44,
+                }}
+              >
+                <input
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                  autoFocus
+                  style={{
+                    flex: 1,
+                    border: "none",
+                    outline: "none",
+                    fontSize: 16,
+                  }}
+                />
+              </Box>
+
+              <Button
+                variant="contained"
+                endIcon={<SendIcon />}
+                onClick={handleSend}
+              >
+                Send
+              </Button>
+            </>
+          )}
         </Box>
-      </Drawer>
 
-      {/* Progress Modal */}
-      <ProgressFormModal
-        open={openModal}
-        onClose={() => {
-          setOpenModal(false);
-          setEditData(null); // ✅ reset after close
-        }}
-        projectId={task?.project_id || null}
-        taskId={task?.id || null}
-        isSubtask={isSubtask}
-        parentTaskId={parentTaskId}
-        editData={editData}   // ✅ PASS IT
-      />
-
-
-      {/* Image Preview */}
-      <ImagePreview
-        open={preview.open}
-        src={preview.src}
-        onClose={() => setPreview({ open: false, src: "" })}
-      />
-    </>
+        {/* HIDDEN IMAGE INPUT */}
+        <input
+          type="file"
+          ref={imageInputRef}
+          hidden
+          accept="image/*"
+          multiple
+          onChange={(e) => setSelectedImages(Array.from(e.target.files))}
+        />
+      </Box>
+    </Drawer>
   );
 }
-

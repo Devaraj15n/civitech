@@ -34,6 +34,8 @@ router.use("/project-progress", require("./project/ProgressTracking.routes"));
 router.use("/sub-task-progress", require("./project/SubTaskProgressTracking.routes"));
 router.use("/progress-message", require("./project/Progress_Message.routes"));
 router.use("/subtask-progress-message", require("./project/SubTask_Progress_Message.routes"));
+router.use("/progress-files", require("./project/ProgressTrackingFiles.routes"));
+router.use("/subtask-progress-files", require("./project/SubTaskProgressTrackingFiles.routes"));
 
 
 // Dashboard Routes
