@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchProjectById } from "../../../features/projects/projectSlice";
 import ProjectHeader from "./ProjectHeader";
 
-const ALLOWED_TABS = ["overview", "tasks", "boq", "materials", "transactions"];
+const ALLOWED_TABS = ["overview", "tasks", "boq", "materials", "transactions","attendance"];
 
 export default function ProjectDetails() {
   const { id } = useParams();
@@ -60,6 +60,7 @@ export default function ProjectDetails() {
         <Tab label="BOQ" value="boq" />
         <Tab label="Materials" value="materials" />
         <Tab label="Transactions" value="transactions" />
+        <Tab label="Attendance" value="attendance" />
       </Tabs>
 
       <Outlet />

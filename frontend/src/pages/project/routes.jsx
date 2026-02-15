@@ -6,7 +6,7 @@ import BoqList from "./boq/ProjectBOQ";
 import TaskList from "./task/index/ProjectTasks";
 // import ProgressTracking from "./progress/ProjectProgress";
 import MaterialTransactions from "./material/ProjectMaterials";
-
+import ProjectAttendance from "./attendance/ProjectAttendance";
 /* 🔹 TRANSACTION */
 import TransactionLayout from "./transaction/transaction_tab/TransactionLayout";
 import TransactionsPage from "./transaction/TransactionPage";
@@ -31,6 +31,7 @@ export default {
         { path: "list", element: <TransactionsPage /> },
         { path: "payment-requests", element: <PaymentRequestsPage /> }
       ]
-    }
+    },
+    { path: "attendance", element: <ProjectAttendance/> }
   ],
 };
