@@ -22,6 +22,12 @@ import {
 
 import { showSuccess, showError } from "../../../../utils/toastHelper";
 
+import { fetchProgressTimeline }
+  from "../../../../features/projects/progress/progressTimelineSlice";
+
+import { fetchSubTaskProgressTimeline }
+  from "../../../../features/projects/progress/subTaskProgressTimelineSlice";
+
 export default function ProgressFormModal({
   open,
   onClose,
@@ -113,8 +119,14 @@ export default function ProgressFormModal({
         })
       ).unwrap();
 
-      dispatch(fetchProgress({ taskId, isSubtask }));
+      // 🔥 Refresh timeline instead of progress list
+      if (isSubtask) {
+        dispatch(fetchSubTaskProgressTimeline({ subTaskId: taskId }));
+      } else {
+        dispatch(fetchProgressTimeline({ taskId }));
+      }
 
+      // Update parent task if needed
       if (isSubtask && parentTaskId) {
         dispatch(fetchTaskProgress({ taskId: parentTaskId }));
       }
