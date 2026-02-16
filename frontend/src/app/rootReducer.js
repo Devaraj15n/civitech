@@ -13,6 +13,10 @@ import projectReducer from "../features/projects/projectSlice";
 import projectTaskReducer from "../features/projects/tasks/taskSlice";
 import subTaskReducer from "../features/projects/subtasks/subTaskSlice";
 import progressReducer from "../features/projects/progress/progressSlice";
+import progressMessageReducer from "../features/projects/progress/progressMessageSlice";
+import projectTrackingFileReducer from "../features/projects/progress/progressTrackingFilesSlice";
+import progressTimelineReducer from "../features/projects/progress/progressTimelineSlice";
+import subTaskProgressTimelineReducer from "../features/projects/progress/subTaskProgressTimelineSlice";
 
 
 
@@ -33,7 +37,11 @@ const rootReducer = {
   project: projectReducer,
   projectTask:projectTaskReducer,
   projectSubTask: subTaskReducer,
-  progress: progressReducer, // ✅ add it here
+  progress: progressReducer,
+  progressMessage: progressMessageReducer,
+  progressTrackingFiles: projectTrackingFileReducer,
+  progressTimeline: progressTimelineReducer,
+  subTaskProgressTimeline: subTaskProgressTimelineReducer,
 
   // Dashboard
   dashboard: dashboardReducer

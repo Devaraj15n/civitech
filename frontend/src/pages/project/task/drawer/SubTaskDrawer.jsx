@@ -26,6 +26,8 @@ export default function SubTaskDrawer({ open, onClose, parentTask }) {
     duration_days: "",
     start_date: "",
     end_date: "",
+    quantity: "",
+    unit: "",
     notes: "",
   });
 
@@ -48,17 +50,37 @@ export default function SubTaskDrawer({ open, onClose, parentTask }) {
       return;
     }
 
+    if (!form.quantity || Number(form.quantity) <= 0) {
+      showError("Quantity is required and must be greater than 0");
+      return;
+    }
+
+    if (!form.unit) {
+      showError("Unit is required");
+      return;
+    }
+
+
 
     try {
       await dispatch(
         saveSubTask({
           project_id: parentTask.project_id,
           task_id: parentTask.id,
-          ...form,
+          sub_task_name: form.sub_task_name,
+          duration_days: form.duration_days || null,
+          start_date: form.start_date || null,
+          end_date: form.end_date || null,
+
+          quantity: Number(form.quantity),
+          unit: form.unit,
+
+          notes: form.notes || null,
           created_by: user?.id || 1,
           updated_by: user?.id || 1,
         })
       ).unwrap();
+
 
       showSuccess({ data: { message: "Subtask created successfully" } });
 
@@ -118,7 +140,7 @@ export default function SubTaskDrawer({ open, onClose, parentTask }) {
             onChange={handleChange}
           />
 
-          {/* <TextField
+          <TextField
             label="Quantity *"
             name="quantity"
             type="number" // ✅ ensures only numbers
@@ -138,14 +160,14 @@ export default function SubTaskDrawer({ open, onClose, parentTask }) {
             onChange={handleChange}
             fullWidth
           >
-            {["%","kg", "ltr", "pcs", "bag", "m", "m²", "m³", "ton", "box"].map(
+            {["%", "kg", "ltr", "pcs", "bag", "m", "m²", "m³", "ton", "box"].map(
               (unit) => (
                 <MenuItem key={unit} value={unit}>
                   {unit}
                 </MenuItem>
               )
             )}
-          </TextField> */}
+          </TextField>
 
           <TextField
             label="Notes"
