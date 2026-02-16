@@ -18,7 +18,6 @@ export const deleteProgressMessage = (id, isSubtask = false) =>
         ? api.delete(`/subtask-progress-message/${id}`)
         : api.delete(`/progress-message/${id}`);
 
-
 /* ================= UPLOAD FILE ================= */
 export const uploadProgressFile = (formData, isSubtask = false) =>
     isSubtask

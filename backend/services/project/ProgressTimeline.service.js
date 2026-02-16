@@ -3,9 +3,11 @@ const {
     progress_tracking: Progress,
     progress_tracking_files: ProgressFiles,
     progress_tracking_message: Message,
+    progress_tracking_message_file: MessageFile,
     sub_task_progress_tracking: SubProgress,
     sub_task_progress_tracking_files: SubProgressFiles,
     sub_task_progress_tracking_message: SubMessage,
+    subtask_progress_message_file: SubMessageFile,
 } = require("../../models");
 
 module.exports = {
@@ -43,7 +45,15 @@ module.exports = {
                         return {
                             type: "message",
                             created_at: item.created_at,
-                            data: await Message.findByPk(item.reference_id),
+                            data: await Message.findByPk(item.reference_id, {
+                                include: [
+                                    {
+                                        model: MessageFile,
+                                        as: "files",
+                                        required: false,
+                                    },
+                                ],
+                            }),
                         };
 
                     case "SUB_TASK_PROGRESS":
@@ -65,7 +75,15 @@ module.exports = {
                         return {
                             type: "message",
                             created_at: item.created_at,
-                            data: await SubMessage.findByPk(item.reference_id),
+                            data: await SubMessage.findByPk(item.reference_id, {
+                                include: [
+                                    {
+                                        model: SubMessageFile,
+                                        as: "files",
+                                        required: false,
+                                    },
+                                ],
+                            }),
                         };
 
                     default:

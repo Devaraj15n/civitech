@@ -32,13 +32,15 @@ import {
 import {
   fetchProgressMessages,
   sendProgressMessage,
+  deleteProgressMessageThunk,
+  deleteProgressFile,
 } from "../../../../features/projects/progress/progressMessageSlice";
 
-import {
-  fetchProgressTrackingFiles,
-  uploadProgressFiles,
-  deleteProgressFile,
-} from "../../../../features/projects/progress/progressTrackingFilesSlice";
+// import {
+//   fetchProgressTrackingFiles,
+//   uploadProgressFiles,
+//   deleteProgressFile,
+// } from "../../../../features/projects/progress/progressTrackingFilesSlice";
 
 import { fetchProgressTimeline }
   from "../../../../features/projects/progress/progressTimelineSlice";
@@ -122,25 +124,11 @@ export default function ProgressDrawer({
   /* ================= FETCH ================= */
 
   useEffect(() => {
-    if (!open || !task?.id) return;
-
-    if (isSubtask) {
-      dispatch(fetchSubTaskProgressTimeline({ subTaskId: task.id }));
-    } else {
-      dispatch(fetchProgressTimeline({ taskId: task.id }));
-    }
-
-    // 🔄 Update parent task progress if sub-task changed
-    if (isSubtask && parentTaskId) {
-      dispatch(fetchTaskProgress({ taskId: parentTaskId }));
-    }
-  }, [
-    open,
-    task?.id,
-    isSubtask,
-    parentTaskId,
-    dispatch,
-  ]);
+    if (!open || !taskId) return;
+    if (isSubtask) dispatch(fetchSubTaskProgressTimeline({ subTaskId: taskId }));
+    else dispatch(fetchProgressTimeline({ taskId }));
+    if (isSubtask && parentTaskId) dispatch(fetchTaskProgress({ taskId: parentTaskId }));
+  }, [open, taskId, isSubtask, parentTaskId, dispatch]);
 
 
   /* ================= ACTIONS ================= */
@@ -166,55 +154,40 @@ export default function ProgressDrawer({
   const handleSend = async () => {
     if (!message.trim() && !selectedImages.length) return;
 
+    const files = selectedImages.map((file) => ({
+      file_path: file.path,     // or temporary path if using FormData
+      file_type: file.type,
+    }));
+    console.log(files);
+
+
     const res = await dispatch(
       sendProgressMessage({
-        taskId: task.id,
+        taskId,
         projectId: task.project_id,
         message,
+        files,          // pass the files here
         isSubtask,
       })
     ).unwrap();
 
-    console.log("Message sent, response:", res);
-
-    if (selectedImages.length) {
-          console.log("IF", res);
-
-      await dispatch(
-        uploadProgressFiles({
-          trackingId: res.message.id,
-          files: selectedImages,
-          isSubtask,
-        })
-      );
-    }
-
-     // ✅ REFRESH TIMELINE HERE
-    if (isSubtask) {
-      dispatch(fetchSubTaskProgressTimeline({ subTaskId: task.id }));
-    } else {
-      dispatch(fetchProgressTimeline({ taskId: task.id }));
-    }
-
-    // Optional: refresh parent task progress
-    if (isSubtask && parentTaskId) {
-      dispatch(fetchTaskProgress({ taskId: parentTaskId }));
-    }
-
     setMessage("");
     setSelectedImages([]);
+
+    if (isSubtask) dispatch(fetchSubTaskProgressTimeline({ subTaskId: taskId }));
+    else dispatch(fetchProgressTimeline({ taskId }));
   };
 
-  const handleDeleteMessageImage = (fileId, messageId) => {
-    if (!window.confirm("Delete this image?")) return;
 
-    dispatch(
-      deleteProgressFile({
-        id: fileId,
-        trackingId: messageId,
-        isSubtask,
-      })
-    );
+  const handleDeleteMessage = async (messageId) => {
+    if (!window.confirm("Delete this message?")) return;
+
+    await dispatch(deleteProgressMessageThunk({ id: messageId, taskId, isSubtask }));
+  };
+
+  const handleDeleteFile = async (fileId) => {
+    if (!window.confirm("Delete this image?")) return;
+    await dispatch(deleteProgressFile({ id: fileId, taskId, isSubtask }));
   };
 
   /* ================= AUTO SCROLL ================= */
@@ -267,141 +240,87 @@ export default function ProgressDrawer({
             {timeline.map((item) => {
               if (!item?.data) return null;
 
-              /* ================= PROGRESS ================= */
-              if (item.type === "progress") {
-                const p = item.data;
+              const isProgress = item.type === "progress";
+              const isMessage = item.type === "message";
 
-                return (
-                  <Box
-                    key={`p-${p.id}`}
-                    sx={{
-                      p: 2,
-                      mb: 2,
-                      bgcolor: "#f5f5f5",
-                      borderRadius: 2,
-                      position: "relative",
-                    }}
-                  >
-                    {/* ACTIONS */}
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        top: 8,
-                        right: 8,
-                        display: "flex",
-                        gap: 1,
-                      }}
-                    >
+              return (
+                <Box
+                  key={`${item.type}-${item.data.id}`}
+                  sx={{
+                    p: 2,
+                    mb: 2,
+                    bgcolor: isProgress ? "#f5f5f5" : "#eef3ff",
+                    borderRadius: 2,
+                    position: "relative",
+                  }}
+                >
+                  {/* Actions */}
+                  {isProgress && (
+                    <Box sx={{ position: "absolute", top: 8, right: 8, display: "flex", gap: 1 }}>
                       <Tooltip title="Edit progress">
-                        <IconButton
-                          size="small"
-                          onClick={() => handleEditProgress(p)}
-                        >
+                        <IconButton size="small" onClick={() => { setEditData(item.data); setOpenModal(true); }}>
                           <EditIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
-
                       <Tooltip title="Delete progress">
-                        <IconButton
-                          size="small"
-                          color="error"
-                          onClick={() => handleDeleteProgress(p.id)}
-                        >
+                        <IconButton size="small" color="error" onClick={() => handleDeleteProgress(item.data.id)}>
                           <DeleteIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
                     </Box>
+                  )}
 
-                    <Typography fontWeight={600}>
-                      {p.progress_quantity}%
-                    </Typography>
-                    <Typography>{p.remarks}</Typography>
-
-                    {p.files
-                      ?.filter(file => file.file_type.startsWith("image/"))
-                      ?.length > 0 && (
-                        <Box mt={1} display="flex" gap={1} flexWrap="wrap">
-                          {p.files
-                            .filter(file => file.file_type.startsWith("image/"))
-                            .map((file) => {
-                              const imgUrl = `${import.meta.env.VITE_API_URL}/${file.file_path}`;
-
-                              return (
-                                <Box
-                                  key={file.id}
-                                  component="img"
-                                  src={imgUrl}
-                                  sx={{
-                                    width: 80,
-                                    height: 80,
-                                    borderRadius: 1,
-                                    objectFit: "cover",
-                                    cursor: "pointer",
-                                  }}
-                                  onClick={() => setPreview({ open: true, src: imgUrl })}
-                                />
-                              );
-                            })}
-                        </Box>
-                      )}
-
-                  </Box>
-                );
-              }
-
-              /* ================= MESSAGE ================= */
-              if (item.type === "message") {
-                const m = item.data;
-
-                return (
-                  <Box
-                    key={`m-${m.id}`}
-                    sx={{
-                      p: 2,
-                      mb: 1,
-                      bgcolor: "#eef3ff",
-                      borderRadius: 2,
-                      position: "relative",
-                    }}
-                  >
-                    {/* DELETE MESSAGE */}
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        top: 8,
-                        right: 8,
-                        display: "flex",
-                        gap: 1,
-                      }}
-                    >
-                      <Tooltip title="Edit progress">
-                        <IconButton
-                          size="small"
-                          onClick={() => handleEditMessage(p)}
-                        >
-                          <EditIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-
-                      <Tooltip title="Delete progress">
-                        <IconButton
-                          size="small"
-                          color="error"
-                          onClick={() => handleDeleteMessageImage(p.id)}
-                        >
+                  {isMessage && (
+                    <Box sx={{ position: "absolute", top: 8, right: 8, display: "flex", gap: 1 }}>
+                      <Tooltip title="Delete message">
+                        <IconButton size="small" color="error" onClick={() => handleDeleteMessage(item.data.id)}>
                           <DeleteIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
                     </Box>
+                  )}
 
-                    <Typography variant="body2">
-                      {m.message}
+                  {/* Content */}
+                  {isProgress && (
+                    <>
+                      <Typography fontWeight={600}>{item.data.progress_quantity}%</Typography>
+                      <Typography>{item.data.remarks}</Typography>
+                    </>
+                  )}
+                  {isMessage && item.data.message && (
+                    <Typography variant="body2" sx={{ mb: item.data.files?.length ? 1 : 0 }}>
+                      {item.data.message}
                     </Typography>
-                  </Box>
-                );
-              }
+                  )}
 
-              return null;
+                  {/* Images */}
+                  {item.data.files?.filter(f => f.file_type.startsWith("image/"))?.length > 0 && (
+                    <Box display="flex" gap={1} flexWrap="wrap">
+                      {item.data.files.filter(f => f.file_type.startsWith("image/")).map((file) => {
+                        const url = `${import.meta.env.VITE_FILE_URL}/${file.file_path}`;
+                        return (
+                          <Box key={file.id} sx={{ position: "relative", width: 80, height: 80 }}>
+                            <img
+                              src={url}
+                              style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 4, cursor: "pointer" }}
+                              onClick={() => setPreview({ open: true, src: url })}
+                            />
+                            {isMessage && (
+                              <IconButton
+                                size="small"
+                                sx={{ position: "absolute", top: -8, right: -8, backgroundColor: "white", border: "1px solid #ccc" }}
+                                onClick={() => handleDeleteFile(file.id)}
+                              >
+                                <CloseIcon fontSize="small" />
+                              </IconButton>
+                            )}
+                          </Box>
+                        );
+                      })}
+                    </Box>
+                  )}
+                </Box>
+              );
             })}
             <div ref={scrollRef} />
           </Box>
@@ -412,6 +331,59 @@ export default function ProgressDrawer({
             <Button variant="contained" onClick={() => setOpenModal(true)}>
               + Progress
             </Button>
+
+            {/* PREVIEW SELECTED IMAGES */}
+            {selectedImages.length > 0 && (
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 1,
+                  mb: 1,
+                  flexWrap: "wrap",
+                }}
+              >
+                {Array.from(selectedImages).map((file, index) => {
+                  const url = URL.createObjectURL(file); // local preview
+
+                  return (
+                    <Box
+                      key={index}
+                      sx={{
+                        position: "relative",
+                        width: 60,
+                        height: 60,
+                        borderRadius: 1,
+                        overflow: "hidden",
+                        border: "1px solid #d0d0d0",
+                      }}
+                    >
+                      <img
+                        src={url}
+                        alt="preview"
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      />
+                      <IconButton
+                        size="small"
+                        sx={{
+                          position: "absolute",
+                          top: -8,
+                          right: -8,
+                          backgroundColor: "white",
+                          border: "1px solid #ccc",
+                          "&:hover": { backgroundColor: "#eee" },
+                        }}
+                        onClick={() =>
+                          setSelectedImages(prev => prev.filter((_, i) => i !== index))
+                        }
+                      >
+                        <CloseIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
+                  );
+                })}
+              </Box>
+            )}
+
 
             <Box sx={{ flex: 1, display: "flex", border: "1px solid #d0d0d0", borderRadius: 2 }}>
               <input

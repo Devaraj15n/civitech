@@ -66,7 +66,12 @@ module.exports = (sequelize, DataTypes) => {
             foreignKey: "updated_by",
             as: "updater",
         });
-    };
 
+        ProgressTrackingMessage.hasMany(models.progress_tracking_message_file, {
+            foreignKey: "message_id",
+            as: "files",
+        });
+
+    };
     return ProgressTrackingMessage;
 };
