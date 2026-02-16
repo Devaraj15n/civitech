@@ -33,9 +33,20 @@ module.exports = (sequelize, DataTypes) => {
                 allowNull: true,
             },
 
+            /** 🔑 REQUIRED FOR PROGRESS */
+            quantity: {
+                type: DataTypes.DECIMAL(12, 2),
+                allowNull: false,
+                comment: "Total planned quantity for the sub-task",
+            },
+            unit: {
+                type: DataTypes.STRING(200),
+                allowNull: true,
+            },
+
             progress_percentage: {
                 type: DataTypes.DECIMAL(5, 2),
-                allowNull: true,
+                allowNull: false,
                 defaultValue: 0.0,
             },
 
@@ -49,17 +60,14 @@ module.exports = (sequelize, DataTypes) => {
                 defaultValue: 1,
             },
 
-            /** Audit fields */
             created_by: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
-                comment: "User ID who created the subtask",
             },
 
             updated_by: {
                 type: DataTypes.INTEGER,
                 allowNull: true,
-                comment: "User ID who last updated the subtask",
             },
         },
         {

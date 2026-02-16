@@ -24,7 +24,7 @@ module.exports = {
       throw new Error("Invalid project or you don't have permission");
     }
 
-    return base.create(Task)({
+    const task = await base.create(Task)({
       project_id: data.project_id,
       task_name: data.task_name,
       start_date: data.start_date,
@@ -39,6 +39,7 @@ module.exports = {
       created_by: user.id,
       updated_by: user.id,
     });
+    return task;
 
   },
 
@@ -116,7 +117,7 @@ module.exports = {
     }
 
 
-    return base.update(Task)(id, {
+    const updatedSubtask = await base.update(Task)(id, {
       project_id: data.project_id ?? record.project_id,
       task_name: data.task_name ?? record.task_name,
       start_date: data.start_date ?? record.start_date,
@@ -129,6 +130,10 @@ module.exports = {
       status: data.status ?? record.status,
       updated_by: user.id,
     });
+
+    await updateParentTaskProgress(record.task_id);
+
+    return updatedSubtask;
 
   },
 

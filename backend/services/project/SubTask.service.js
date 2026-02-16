@@ -1,6 +1,24 @@
 const base = require("../base.service");
 const { sub_task: SubTask, task_master: Task } = require("../../models");
 
+
+const updateParentTaskProgress = async (taskId) => {
+  const subtasks = await SubTask.findAll({
+    where: { task_id: taskId, status: 1 },
+    attributes: ["progress_percentage"],
+  });
+
+  if (!subtasks.length) return;
+
+  const total = subtasks.reduce((sum, s) => sum + s.progress_percentage, 0);
+  const avgProgress = Math.round(total / subtasks.length);
+
+  await Task.update(
+    { progress_percentage: avgProgress },
+    { where: { id: taskId } }
+  );
+};
+
 module.exports = {
   /* ================= CREATE ================= */
   create: async (data, user) => {
@@ -19,7 +37,7 @@ module.exports = {
       throw new Error("Invalid task");
     }
 
-    return base.create(SubTask)({
+    const subtask = await base.create(SubTask)({
       task_id: data.task_id,
       sub_task_name: data.sub_task_name,
       start_date: data.start_date,
@@ -27,11 +45,17 @@ module.exports = {
       duration_days: data.duration_days,
       progress_percentage: data.progress_percentage ?? 0,
       notes: data.notes ?? null,
+      quantity: Number(data.quantity),
+      unit: data.unit,
+
 
       status: 1,
       created_by: user.id,
       updated_by: user.id,
     });
+
+    await updateParentTaskProgress(data.task_id);
+    return subtask;
   },
 
   /* ================= FIND BY ID ================= */
@@ -61,7 +85,7 @@ module.exports = {
       throw new Error("Subtask not found");
     }
 
-    return base.update(SubTask)(id, {
+    const subtask = await base.update(SubTask)(id, {
       sub_task_name: data.sub_task_name ?? record.sub_task_name,
       start_date: data.start_date ?? record.start_date,
       end_date: data.end_date ?? record.end_date,
@@ -72,6 +96,10 @@ module.exports = {
 
       updated_by: user.id,
     });
+
+
+    await updateParentTaskProgress(record.id);
+    return subtask;
   },
 
   /* ================= SOFT DELETE ================= */

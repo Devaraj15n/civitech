@@ -48,20 +48,20 @@ export const fetchTaskProgress = createAsyncThunk(
 
 /* ================= SAVE ================= */
 export const saveProgress = createAsyncThunk(
-  "progress/save",
-  async ({ data, taskId, isSubtask = false }, { rejectWithValue }) => {
-    try {
-      const id = data.get("id");
+    "progress/save",
+    async ({ data, taskId, isSubtask = false }, { rejectWithValue }) => {
+        try {
+            const id = data.get("id");
 
-      const res = id
-        ? await updateProgress(id, data, isSubtask)
-        : await createProgress(data, isSubtask);
+            const res = id
+                ? await updateProgress(id, data, isSubtask)
+                : await createProgress(data, isSubtask);
 
-      return { taskId, progress: res.data?.data };
-    } catch (err) {
-      return rejectWithValue(err.response?.data || err.message);
+            return { taskId, progress: res.data?.data };
+        } catch (err) {
+            return rejectWithValue(err.response?.data || err.message);
+        }
     }
-  }
 );
 
 
@@ -69,9 +69,9 @@ export const saveProgress = createAsyncThunk(
 /* ================= DELETE ================= */
 export const deleteProgress = createAsyncThunk(
     "progress/delete",
-    async ({ id, taskId, isSubtask = false  }, { rejectWithValue }) => {
+    async ({ id, taskId, isSubtask = false }, { rejectWithValue }) => {
         try {
-            await deleteProgressApi(id,isSubtask );
+            await deleteProgressApi(id, isSubtask);
             return { id, taskId };
         } catch (err) {
             return rejectWithValue(err.response?.data || err.message);

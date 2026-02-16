@@ -1,68 +1,91 @@
-const { sequelize, sub_task_progress_tracking_files: SubTaskProgressTrackingFiles } = require("../../models");
+const {
+    sub_task_progress_tracking: SubProgress,
+    sub_task_activity_timeline: Timeline,
+    sub_task: SubTask,
+    sub_task_progress_tracking_files: SubTaskProgressTrackingFiles,
+} = require("../../models");
 
 module.exports = {
-    /* ================= CREATE ================= */
     create: async (data, user, files = []) => {
         if (!user?.id) throw new Error("User context required");
-        if (!files.length) throw new Error("No files provided");
 
-        const payload = files.map(file => ({
-            sub_task_progress_tracking_id: data.sub_task_progress_tracking_id,
-            file_name: file.originalname,
-            file_path: `uploads/progress/${file.filename}`,
-            file_type: file.mimetype,
-            file_size: file.size,
-            uploaded_by: user.id,
-            status: 1,
-        }));
+        // Fetch the sub-task to get the parent task_id
+        const subTask = await SubTask.findByPk(data.sub_task_id);
+        if (!subTask) throw new Error("Sub-task not found");
 
-        return SubTaskProgressTrackingFiles.bulkCreate(payload);
-    },
+        const payload = [];
+        const timelinePayload = [];
 
-    /* ================= FIND ALL ================= */
-    findAll: async (query) => {
-        return SubTaskProgressTrackingFiles.findAll({
-            where: { ...query, status: 1 },
-            order: [["created_at", "DESC"]],
-        });
-    },
+        // If message exists, create progress entry
+        if (data.message && data.message.trim()) {
+            const progress = await SubProgress.create({
+                sub_task_id: data.sub_task_id,
+                task_id: subTask.task_id,
+                project_id: data.project_id,
+                remarks: data.message,
+                progress_quantity: data.progress_quantity || 0,
+                created_by: user.id,
+            });
 
-    /* ================= FIND BY ID ================= */
-    findById: async (id) => {
-        return SubTaskProgressTrackingFiles.findOne({
-            where: { id, status: 1 },
-        });
-    },
+            timelinePayload.push(
+                Timeline.create({
+                    project_id: data.project_id,
+                    sub_task_id: data.sub_task_id,
+                    task_id: subTask.task_id,
+                    activity_type: "SUB_TASK_PROGRESS",
+                    reference_id: progress.id,
+                    created_by: user.id,
+                })
+            );
 
-    /* ================= FIND BY SUB TASK ID ================= */
-    findBySubTaskId: async (sub_task_progress_tracking_id) => {
-        return SubTaskProgressTrackingFiles.findAll({
-            where: { sub_task_progress_tracking_id, status: 1 },
-            order: [["created_at", "ASC"]],
-        });
-    },
+            payload.push(progress);
+        }
 
-    /* ================= UPDATE ================= */
-    update: async (id, data, user) => {
-        const record = await SubTaskProgressTrackingFiles.findOne({
-            where: { id, status: 1 },
-        });
+        // If files exist, create file records
+        if (files.length) {
+            for (let file of files) {
+                const record = await SubTaskProgressTrackingFiles.create({
+                    sub_task_progress_tracking_id: data.sub_task_progress_tracking_id,
+                    file_name: file.originalname,
+                    file_path: `uploads/progress/${file.filename}`,
+                    file_type: file.mimetype,
+                    file_size: file.size,
+                    uploaded_by: user.id,
+                    status: 1,
+                });
 
-        if (!record) throw new Error("File not found");
+                timelinePayload.push(
+                    Timeline.create({
+                        project_id: data.project_id,
+                        sub_task_id: data.sub_task_id,
+                        task_id: subTask.task_id,
+                        activity_type: "SUB_TASK_PROGRESS_FILE",
+                        reference_id: record.id,
+                        created_by: user.id,
+                    })
+                );
 
-        return record.update(
-            {
-                file_name: data.file_name ?? record.file_name,
-                status: data.status ?? record.status,
+                payload.push(record);
             }
-        );
+        }
+
+        // If no message and no files, throw error
+        if (!data.message && !files.length) {
+            throw new Error("Either message or files must be provided");
+        }
+
+        // Save timeline entries
+        await Promise.all(timelinePayload);
+
+        return payload;
     },
 
-    /* ================= SOFT DELETE ================= */
-    remove: async (id, user) => {
-        return SubTaskProgressTrackingFiles.update(
-            { status: 0 },
-            { where: { id } }
-        );
-    },
+    findAll: (query) =>
+        SubTaskProgressTrackingFiles.findAll({
+            where: { ...query, status: 1 },
+            order: [["created_at", "ASC"]],
+        }),
+
+    findById: (id) =>
+        SubTaskProgressTrackingFiles.findOne({ where: { id, status: 1 } }),
 };

@@ -1,5 +1,7 @@
 const { sequelize, progress_tracking_message: ProgressTrackingMessage } =
     require("../../models");
+    const { progress_activity_timeline: Timeline } = require("../../models");
+
 
 module.exports = {
     /* ================= CREATE ================= */
@@ -20,6 +22,17 @@ module.exports = {
                 },
                 { transaction: t }
             );
+            await Timeline.create(
+                {
+                    project_id: data.project_id,
+                    task_id: data.task_id,
+                    activity_type: "TASK_MESSAGE",
+                    reference_id: message.id,
+                    created_by: user.id,
+                },
+                { transaction: t }
+            );
+
 
             return message;
         });

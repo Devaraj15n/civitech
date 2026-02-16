@@ -1,146 +1,38 @@
-const {
-    sequelize,
-    sub_task_progress_tracking_message: SubTaskProgressTrackingMessage,
-} = require("../../models");
+const { sequelize, sub_task_progress_tracking_message: SubMessage, sub_task_activity_timeline: Timeline, sub_task: SubTask } = require("../../models");
 
 module.exports = {
-    /* ================= CREATE ================= */
     create: async (data, user) => {
-        if (!user?.id || !user?.client_id) {
-            throw new Error("User context is required");
-        }
+        if (!user?.id || !user?.client_id) throw new Error("User context is required");
+        if (!data.sub_task_id) throw new Error("sub_task_id is required");
+        if (!data.project_id) throw new Error("project_id is required");
+        if (!data.message?.trim()) throw new Error("message is required");
 
         return sequelize.transaction(async (t) => {
-            const message = await SubTaskProgressTrackingMessage.create(
-                {
-                    project_id: data.project_id,
-                    sub_task_id: data.sub_task_id,
-                    message: data.message,
-                    status: 1,
-                    created_by: user.id,
-                    updated_by: user.id,
-                },
-                { transaction: t }
-            );
+            const subTask = await SubTask.findByPk(data.sub_task_id, { transaction: t });
+            if (!subTask) throw new Error("Invalid sub_task_id");
+
+            const message = await SubMessage.create({
+                project_id: data.project_id,
+                sub_task_id: data.sub_task_id,
+                message: data.message,
+                status: 1,
+                created_by: user.id,
+                updated_by: user.id,
+            }, { transaction: t });
+
+            // timeline entry
+            await Timeline.create({
+                project_id: data.project_id,
+                sub_task_id: data.sub_task_id,
+                task_id: subTask.task_id,
+                activity_type: "SUB_TASK_MESSAGE",
+                reference_id: message.id,
+                created_by: user.id,
+            }, { transaction: t });
 
             return message;
         });
     },
 
-    /* ================= FIND ALL ================= */
-    findAll: (query, user) => {
-        if (!user?.client_id) {
-            throw new Error("Client ID is required");
-        }
-
-        return SubTaskProgressTrackingMessage.findAll({
-            where: {
-                ...query,
-                status: 1,
-                // client_id: user.client_id
-            },
-            order: [["created_at", "ASC"]],
-        });
-    },
-
-    /* ================= FIND BY ID ================= */
-    findById: (id, user) => {
-        if (!user?.client_id) {
-            throw new Error("Client ID is required");
-        }
-
-        return SubTaskProgressTrackingMessage.findOne({
-            where: {
-                id,
-                status: 1,
-                // client_id: user.client_id
-            },
-        });
-    },
-
-    /* ================= FIND BY SUB TASK ================= */
-    findBySubTask: (sub_task_id, user) => {
-        if (!user?.client_id) {
-            throw new Error("Client ID is required");
-        }
-
-        return SubTaskProgressTrackingMessage.findAll({
-            where: {
-                sub_task_id,
-                status: 1,
-                // client_id: user.client_id
-            },
-            order: [["created_at", "ASC"]],
-        });
-    },
-
-
-    /* ================= FIND BY SUB TASK ================= */
-    findByField: async (field, value, user) => {
-        if (!user?.client_id) {
-            throw new Error("Client ID is required");
-        }
-
-        return SubTaskProgressTrackingMessage.findAll({
-            where: {
-                [field]: value, // sub_task_id or project_id
-                status: 1,
-                // client_id: user.client_id,
-            },
-            order: [["created_at", "ASC"]],
-        });
-    },
-
-
-    /* ================= UPDATE ================= */
-    update: async (id, data, user) => {
-        if (!user?.id || !user?.client_id) {
-            throw new Error("User context is required");
-        }
-
-        return sequelize.transaction(async (t) => {
-            const record = await SubTaskProgressTrackingMessage.findOne({
-                where: {
-                    id,
-                    status: 1,
-                    // client_id: user.client_id
-                },
-                transaction: t,
-            });
-
-            if (!record) {
-                throw new Error("Message not found");
-            }
-
-            await record.update(
-                {
-                    message: data.message ?? record.message,
-                    updated_by: user.id,
-                },
-                { transaction: t }
-            );
-
-            return record;
-        });
-    },
-
-    /* ================= SOFT DELETE ================= */
-    remove: (id, user) => {
-        if (!user?.id || !user?.client_id) {
-            throw new Error("User context is required");
-        }
-
-        return SubTaskProgressTrackingMessage.update(
-            {
-                status: 0,
-                updated_by: user.id,
-            },
-            {
-                where: {
-                    id,
-                    // client_id: user.client_id
-                },
-            }
-        );
-    },
+    findAll: (sub_task_id) => SubMessage.findAll({ where: { sub_task_id, status: 1 }, order: [["created_at", "ASC"]] }),
 };
