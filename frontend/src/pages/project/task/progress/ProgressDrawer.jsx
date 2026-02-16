@@ -175,14 +175,30 @@ export default function ProgressDrawer({
       })
     ).unwrap();
 
+    console.log("Message sent, response:", res);
+
     if (selectedImages.length) {
+          console.log("IF", res);
+
       await dispatch(
         uploadProgressFiles({
-          trackingId: res.id,
+          trackingId: res.message.id,
           files: selectedImages,
           isSubtask,
         })
       );
+    }
+
+     // ✅ REFRESH TIMELINE HERE
+    if (isSubtask) {
+      dispatch(fetchSubTaskProgressTimeline({ subTaskId: task.id }));
+    } else {
+      dispatch(fetchProgressTimeline({ taskId: task.id }));
+    }
+
+    // Optional: refresh parent task progress
+    if (isSubtask && parentTaskId) {
+      dispatch(fetchTaskProgress({ taskId: parentTaskId }));
     }
 
     setMessage("");
