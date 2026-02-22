@@ -6,6 +6,7 @@ router.use(auth);
 
 router.post('/', controller.create);
 router.get('/', controller.findAll);
+router.get("/labour", controller.getLabour);
 router.get('/:id', controller.findById);
 router.put('/:id', controller.update);
 router.delete('/:id', controller.remove);

@@ -52,10 +52,16 @@ module.exports = (sequelize, DataTypes) => {
 
     Party.belongsTo(models.party_type_master, {
       foreignKey: "party_type_id",
+      as: "partyType",
     });
 
     Party.hasMany(models.finance_transaction, {
       foreignKey: "party_id",
+    });
+    Party.hasMany(models.project_parties, {
+      foreignKey: "party_id",
+      sourceKey: "id",
+      as: "projectParties",
     });
   };
 

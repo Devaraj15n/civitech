@@ -25,7 +25,7 @@ module.exports = {
       }, { transaction: t });
 
       // 3️⃣ Create default party types (you can adjust names)
-      const defaultPartyTypes = ['Vendor', 'Client', 'Staff'];
+      const defaultPartyTypes = ['Vendor', 'Client', 'Staff', 'Labour'];
       const partyTypeRecords = [];
 
       for (let type of defaultPartyTypes) {

@@ -5,45 +5,44 @@ const {
 const { Op } = require("sequelize");
 
 module.exports = {
+
     /* ================= CREATE ================= */
     create: async (data, user) => {
-        /**
-         * Prevent duplicate attendance
-         * Same project + party on same day
-         */
+
+        if (!data.attendance_date) {
+            throw new Error("Attendance date is required");
+        }
+
+        // Prevent duplicate attendance for same party + project + date
         const existing = await Attendance.findOne({
             where: {
                 project_id: data.project_id,
                 party_id: data.party_id,
-                created_at: {
-                    [Op.between]: [
-                        new Date().setHours(0, 0, 0, 0),
-                        new Date().setHours(23, 59, 59, 999),
-                    ],
-                },
+                attendance_date: data.attendance_date,
                 status: 1,
             },
         });
 
         if (existing) {
-            throw new Error("Attendance already marked for today");
+            throw new Error("Attendance already marked for this date");
         }
 
         return base.create(Attendance)({
             project_id: data.project_id,
             party_id: data.party_id,
-            is_present: data.is_present ?? 0,
-            attendance_status: data.attendance_status ?? null,
+            attendance_date: data.attendance_date,
+            shift_count: data.shift_count ?? 1,
+            overtime_hours: data.overtime_hours ?? 0,
+            attendance_status: data.attendance_status ?? "Present",
             status: data.status ?? 1,
             created_by: user.id,
         });
     },
 
     /* ================= FIND ALL ================= */
-    findAll: (filters = {}, user) => {
-        const where = {
-            status: 1,
-        };
+    findAll: (filters = {}) => {
+
+        const where = { status: 1 };
 
         if (filters.project_id) {
             where.project_id = filters.project_id;
@@ -54,15 +53,19 @@ module.exports = {
         }
 
         if (filters.from_date && filters.to_date) {
-            where.created_at = {
-                [Op.between]: [
-                    new Date(filters.from_date),
-                    new Date(filters.to_date),
-                ],
+            where.attendance_date = {
+                [Op.between]: [filters.from_date, filters.to_date],
             };
         }
 
-        return base.findAll(Attendance)(where);
+        return base.findAll(Attendance)(where, {
+            include: [
+                { association: "creator" },
+                { association: "updater" },
+                { association: "shifts" },
+            ],
+            order: [["attendance_date", "DESC"]],
+        });
     },
 
     /* ================= FIND BY ID ================= */
@@ -70,28 +73,36 @@ module.exports = {
 
     /* ================= UPDATE ================= */
     update: async (id, data, user) => {
-        /**
-         * Optional duplicate check on update
-         */
-        if (data.project_id && data.party_id) {
+
+        const record = await Attendance.findByPk(id);
+        if (!record) throw new Error("Attendance not found");
+
+        // Duplicate check if changing date/project/party
+        if (data.project_id || data.party_id || data.attendance_date) {
+
             const existing = await Attendance.findOne({
                 where: {
-                    project_id: data.project_id,
-                    party_id: data.party_id,
+                    project_id: data.project_id ?? record.project_id,
+                    party_id: data.party_id ?? record.party_id,
+                    attendance_date: data.attendance_date ?? record.attendance_date,
                     id: { [Op.ne]: id },
                     status: 1,
                 },
             });
 
             if (existing) {
-                throw new Error("Attendance already exists for this party and project");
+                throw new Error("Attendance already exists for this date");
             }
         }
 
         return base.update(Attendance)(id, {
-            is_present: data.is_present,
-            attendance_status: data.attendance_status,
-            status: data.status,
+            project_id: data.project_id ?? record.project_id,
+            party_id: data.party_id ?? record.party_id,
+            attendance_date: data.attendance_date ?? record.attendance_date,
+            shift_count: data.shift_count ?? record.shift_count,
+            overtime_hours: data.overtime_hours ?? record.overtime_hours,
+            attendance_status: data.attendance_status ?? record.attendance_status,
+            status: data.status ?? record.status,
             updated_by: user.id,
         });
     },

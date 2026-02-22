@@ -49,4 +49,28 @@ module.exports = {
       where: { client_id: user.client_id },
     });
   },
+   getLabour: async () => {
+        return Party.findAll({
+            where: { status: 1 },
+            include: [
+                {
+                    model: PartyType,
+                    as: "partyType",
+                    where: {
+                        party_type: "Labour",
+                        status: 1,
+                    },
+                    attributes: ["id", "party_type"],
+                },
+            ],
+            attributes: [
+                "id",
+                "party_name",
+                "phone",
+                "email",
+                "party_type_id",
+            ],
+            order: [["party_name", "ASC"]],
+        });
+    },
 };

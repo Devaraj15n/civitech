@@ -19,6 +19,10 @@ import progressTimelineReducer from "../features/projects/progress/progressTimel
 import subTaskProgressTimelineReducer from "../features/projects/progress/subTaskProgressTimelineSlice";
 
 
+import projectPartyReducer from "../features/projects/project_party/projectPartySlice";
+
+
+
 
 //dashboard
 import dashboardReducer from '../features/dashboard/dashboardSlice'
@@ -42,6 +46,8 @@ const rootReducer = {
   progressTrackingFiles: projectTrackingFileReducer,
   progressTimeline: progressTimelineReducer,
   subTaskProgressTimeline: subTaskProgressTimelineReducer,
+  projectParties: projectPartyReducer,
+
 
   // Dashboard
   dashboard: dashboardReducer

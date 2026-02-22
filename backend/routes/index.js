@@ -28,6 +28,8 @@ router.use("/progress", require("./master/progress.routes"));
 
 // Project Routes
 router.use("/projects", require("./project/projectMaster.routes"));
+router.use("/project-parties", require("./project/projectParties.routes"));
+
 router.use("/tasks", require("./project/TaskMaster.routes"));
 router.use("/sub-tasks", require("./project/SubTask.routes"));
 router.use("/project-progress", require("./project/ProgressTracking.routes"));
@@ -41,6 +43,7 @@ router.use("/subtask-progress-timeline", require("./project/SubTaskProgressTimel
 
 //Attendance Routes
 router.use("/attendance", require("./attendance/attendance.routes"));
+router.use("/party-payroll", require("./payroll/partyPayroll.routes"));
 
 
 // Dashboard Routes
