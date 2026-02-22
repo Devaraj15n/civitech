@@ -1,6 +1,6 @@
 module.exports = (sequelize, DataTypes) => {
-    const ProgressTrackingMessage = sequelize.define(
-        "progress_tracking_message",
+    const Attendance = sequelize.define(
+        "attendance_master",
         {
             id: {
                 type: DataTypes.INTEGER,
@@ -13,22 +13,35 @@ module.exports = (sequelize, DataTypes) => {
                 allowNull: false,
             },
 
-            task_id: {
+            party_id: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
             },
 
-            message: {
-                type: DataTypes.TEXT,
+            is_present: {
+                type: DataTypes.TINYINT(1),
                 allowNull: false,
+                defaultValue: 0, // 0 = Absent, 1 = Present
+            },
+
+            attendance_status: {
+                type: DataTypes.ENUM(
+                    "Present",
+                    "Absent",
+                    "Half Day",
+                    "Leave",
+                    "Holiday"
+                ),
+                allowNull: true,
             },
 
             status: {
                 type: DataTypes.TINYINT(1),
                 allowNull: false,
-                defaultValue: 1,
+                defaultValue: 1, // 1 = Active, 0 = Inactive
             },
 
+            /** Audit fields */
             created_by: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
@@ -40,38 +53,32 @@ module.exports = (sequelize, DataTypes) => {
             },
         },
         {
-            tableName: "progress_tracking_messages",
+            tableName: "attendance_master",
             timestamps: true,
             createdAt: "created_at",
             updatedAt: "updated_at",
         }
     );
 
-    ProgressTrackingMessage.associate = (models) => {
-        ProgressTrackingMessage.belongsTo(models.project_master, {
+    Attendance.associate = (models) => {
+        Attendance.belongsTo(models.project_master, {
             foreignKey: "project_id",
         });
 
-        ProgressTrackingMessage.belongsTo(models.task_master, {
-            foreignKey: "task_id",
-            as: "task",
+        Attendance.belongsTo(models.party_master, {
+            foreignKey: "party_id",
         });
 
-        ProgressTrackingMessage.belongsTo(models.user_master, {
+        Attendance.belongsTo(models.user_master, {
             foreignKey: "created_by",
             as: "creator",
         });
 
-        ProgressTrackingMessage.belongsTo(models.user_master, {
+        Attendance.belongsTo(models.user_master, {
             foreignKey: "updated_by",
             as: "updater",
         });
-
-        ProgressTrackingMessage.hasMany(models.progress_tracking_message_file, {
-            foreignKey: "message_id",
-            as: "files",
-        });
-
     };
-    return ProgressTrackingMessage;
+
+    return Attendance;
 };

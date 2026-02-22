@@ -39,6 +39,9 @@ router.use("/subtask-progress-files", require("./project/SubTaskProgressTracking
 router.use("/progress-timeline", require("./project/ProgressTimeLine.routes"));
 router.use("/subtask-progress-timeline", require("./project/SubTaskProgressTimeline.routes"));
 
+//Attendance Routes
+router.use("/attendance", require("./attendance/attendance.routes"));
+
 
 // Dashboard Routes
 router.use("/dashboard", require("./dashboard.routes"));
