@@ -8,12 +8,11 @@ module.exports = {
 
     /* ================= CREATE ================= */
     create: async (data, user) => {
-
         if (!data.attendance_date) {
             throw new Error("Attendance date is required");
         }
 
-        // Prevent duplicate attendance for same party + project + date
+        // Check if attendance already exists
         const existing = await Attendance.findOne({
             where: {
                 project_id: data.project_id,
@@ -24,9 +23,17 @@ module.exports = {
         });
 
         if (existing) {
-            throw new Error("Attendance already marked for this date");
+            // Update the existing record
+            return existing.update({
+                shift_count: data.shift_count ?? existing.shift_count,
+                overtime_hours: data.overtime_hours ?? existing.overtime_hours,
+                attendance_status: data.attendance_status ?? existing.attendance_status,
+                status: data.status ?? existing.status,
+                updated_by: user.id,
+            });
         }
 
+        // Otherwise create a new record
         return base.create(Attendance)({
             project_id: data.project_id,
             party_id: data.party_id,

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
-  ToggleButtonGroup,
   Grid,
   TextField,
   Autocomplete,
@@ -24,56 +23,133 @@ import dayjs from "dayjs";
 import AddStaff from "./AddStaff";
 import { fetchProjectMembers } from "../../../features/projects/project_party/projectPartySlice";
 import { useParams } from "react-router-dom";
+import api from "../../../api/axios"; // your axios instance
+import { toast } from "react-toastify";
 
 
 function ProjectAttendance() {
   const dispatch = useDispatch();
-  const { id } = useParams(); // <-- this is your projectId from URL
-  const projectId = Number(id); // convert to number if needed
-
-  const [attendanceData, setAttendanceData] = useState({});
-
+  const { id } = useParams();
+  const projectId = Number(id);
 
   const { list: members, loading, error } = useSelector(
     (state) => state.projectParties
   );
 
-  const [formats, setFormats] = useState([]);
-  const [value, setValue] = useState(dayjs());
+  const [attendanceDate, setAttendanceDate] = useState(dayjs());
   const [openDrawer, setOpenDrawer] = useState(false);
   const [search, setSearch] = useState("");
-  const absentOptions = ["Absent", "Week Off", "Paid Leave"];
+  const [attendanceStatus, setAttendanceStatus] = useState({}); // { [party_id]: status }
+  const [attendanceRecords, setAttendanceRecords] = useState({});
 
-  const handleFormat = (event, newFormats) => setFormats(newFormats);
-  const handleOpen = () => setOpenDrawer(true);
-  const handleClose = () => setOpenDrawer(false);
 
-  // Fetch project members on load
+  const Options = ["Present", "Absent", "Week Off", "Paid Leave"];
+
   useEffect(() => {
     if (projectId) {
       dispatch(fetchProjectMembers(projectId));
     }
   }, [projectId, dispatch]);
 
-  // Filter members based on search
+
+  useEffect(() => {
+    const fetchAttendance = async () => {
+      try {
+        const res = await api.get("/attendance", {
+          params: {
+            project_id: projectId,
+            from_date: attendanceDate.format("YYYY-MM-DD"),
+            to_date: attendanceDate.format("YYYY-MM-DD"),
+          },
+        });
+
+        // Map attendance by party_id for quick access
+        const records = {};
+        res.data?.data?.forEach((att) => {
+          records[att.party_id] = att.attendance_status;
+        });
+
+        setAttendanceRecords(records);
+
+        // Reset manual selections when date changes
+        setAttendanceStatus({});
+      } catch (err) {
+        console.error("Error fetching attendance:", err);
+        setAttendanceRecords({});
+        setAttendanceStatus({});
+      }
+    };
+
+    if (projectId && attendanceDate) fetchAttendance();
+  }, [projectId, attendanceDate]);
+
+  const handleStatusChange = (partyId, status) => {
+    setAttendanceStatus((prev) => ({
+      ...prev,
+      [partyId]: status ?? null, // if cleared, store null
+    }));
+  };
+
+  const handleApplyAttendance = async (partyId) => {
+    try {
+      const status = attendanceStatus[partyId] ?? attendanceRecords[partyId] ?? null;
+
+      if (!status) {
+        // If cleared, delete the record (or send empty status depending on your API)
+        await api.delete("/attendance", {
+          data: {
+            project_id: projectId,
+            party_id: partyId,
+            attendance_date: attendanceDate.format("YYYY-MM-DD"),
+          },
+        });
+      } else {
+        // Normal update
+        await api.post("/attendance", {
+          project_id: projectId,
+          party_id: partyId,
+          attendance_date: attendanceDate.format("YYYY-MM-DD"),
+          shift_count: 1,
+          overtime_hours: 0,
+          attendance_status: status,
+          status: 1,
+        });
+      }
+
+      // Refetch updated attendance
+      const res = await api.get("/attendance", {
+        params: {
+          project_id: projectId,
+          from_date: attendanceDate.format("YYYY-MM-DD"),
+          to_date: attendanceDate.format("YYYY-MM-DD"),
+        },
+      });
+
+      const records = {};
+      res.data?.data?.forEach((att) => {
+        records[att.party_id] = att.attendance_status;
+      });
+
+      setAttendanceRecords(records);
+      setAttendanceStatus((prev) => ({ ...prev, [partyId]: undefined }));
+
+      toast.success(`Attendance updated successfully!`);
+    } catch (err) {
+      console.error("Error saving attendance:", err);
+      toast.error("Failed to update attendance");
+    }
+  };
+
   const filteredMembers = members.filter((m) =>
     m.party?.party_name?.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
     <div>
-      <Grid container justifyContent="space-between" alignItems="center">
-        <Grid display="flex" gap={2}>
-          <ToggleButtonGroup
-            value={formats}
-            onChange={handleFormat}
-            sx={{ borderRadius: "5px", height: 40 }}
-          ></ToggleButtonGroup>
-        </Grid>
-
-        <Grid display="flex">
+      <Grid container justifyContent="flex-end" alignItems="right">
+        <Grid display="flex" align="right" gap={1}>
           <Button
-            onClick={handleOpen}
+            onClick={() => setOpenDrawer(true)}
             sx={{ color: "white", background: "violet", height: 40 }}
           >
             + Add Site Staff
@@ -84,13 +160,13 @@ function ProjectAttendance() {
       <Divider sx={{ borderBottomWidth: 2, mt: 3 }} />
 
       <Grid container justifyContent="space-between" mt={2} gap={2}>
-        {/* Left side: Date Picker + Search */}
         <Grid xs={12} sm={6} md={6} display="flex" gap={2} alignItems="center">
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker
               label="Select Date"
-              value={value}
-              onChange={(newValue) => setValue(newValue)}
+              value={attendanceDate}
+              onChange={(newValue) => setAttendanceDate(newValue)}
+              format="DD-MM-YYYY"
               slotProps={{
                 textField: { size: "small", fullWidth: true },
               }}
@@ -111,27 +187,7 @@ function ProjectAttendance() {
             }}
           />
         </Grid>
-
-        {/* Right side: Attendance summary */}
-        <Grid xs={12} sm={6} md={6} display="flex" justifyContent="flex-end" alignItems="center" gap={2}>
-          <Typography>
-            Present: {members.filter((m) => m.attendance_status === "Present").length}
-          </Typography>
-          <Typography sx={{ fontSize: "12px" }}>
-            Absent: {members.filter((m) => m.attendance_status === "Absent").length}
-          </Typography>
-          <Typography sx={{ fontSize: "12px" }}>
-            Paid Leave: {members.filter((m) => m.attendance_status === "Paid Leave").length}
-          </Typography>
-          <Typography sx={{ fontSize: "12px" }}>
-            Week Off: {members.filter((m) => m.attendance_status === "Week Off").length}
-          </Typography>
-        </Grid>
       </Grid>
-      {/* 
-      <Grid container direction="column" mt={2}>
-
-      </Grid> */}
 
       <TableContainer component={Paper} sx={{ mt: 2 }}>
         <Table>
@@ -152,31 +208,68 @@ function ProjectAttendance() {
                 <TableCell colSpan={2}>Error: {error}</TableCell>
               </TableRow>
             )}
-            {!loading && filteredMembers.map((member) => (
-              <TableRow key={member.id}>
-                <TableCell>{member.party.party_name}</TableCell>
-                <TableCell sx={{ display: "flex", gap: 1 }} align="right">
-                  <Autocomplete
-                    disableClearable
-                    options={absentOptions}
-                    size="small"
-                    defaultValue={member.attendance_status || "Present"}
-                    renderInput={(params) => <TextField {...params} />}
-                    sx={{ width: 130 }}
-                  />
-                  <Button>Present</Button>
+            {!loading && filteredMembers.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={2} align="center" sx={{ py: 3 }}>
+                  No staff found. Please add members.
                 </TableCell>
               </TableRow>
-            ))}
+            )}
+            {!loading &&
+              filteredMembers.map((member) => {
+                const key = member.party_id; // use party_id as key
+                const currentStatus = attendanceStatus[key] ?? attendanceRecords[key] ?? "Empty";
+
+                return (
+                  <TableRow key={key}>
+                    <TableCell>{member.party.party_name}</TableCell>
+                    <TableCell
+                      sx={{ display: "flex", alignItems: "center", gap: 2 }}
+                      align="right"
+                    >
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        size="small"
+                        onClick={() => handleApplyAttendance(key)}
+                      >
+                        Apply
+                      </Button>
+
+                      <Autocomplete
+                        options={Options}
+                        size="small"
+                        disableClearable={false} // allows clearing
+                        value={currentStatus === "Empty" ? null : currentStatus} // null allows empty selection
+                        onChange={(_, value) => handleStatusChange(key, value || null)} // store null if cleared
+                        renderInput={(params) => <TextField {...params} placeholder="Select" />}
+                        sx={{ width: 130 }}
+                      />
+
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          ml: 1,
+                          color: attendanceRecords[key] ? "green" : "text.secondary",
+                          minWidth: 60,
+                          textAlign: "right",
+                        }}
+                      >
+                        {attendanceRecords[key] || "Empty"}
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
           </TableBody>
         </Table>
       </TableContainer>
 
       <AddStaff
         open={openDrawer}
-        onClose={handleClose}
-        projectId={projectId}          // <-- Pass project ID here
-        onAdded={() => dispatch(fetchProjectMembers(projectId))} // refresh members
+        onClose={() => setOpenDrawer(false)}
+        projectId={projectId}
+        onAdded={() => dispatch(fetchProjectMembers(projectId))}
       />
     </div>
   );
