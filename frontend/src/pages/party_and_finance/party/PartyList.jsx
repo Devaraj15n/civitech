@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import MasterList from "../../../components/master/MasterList";
+import MasterList from "./MasterList";
 import PartyLibraryForm from "./PartyLibraryForm";
 import { fetchParties, saveParty } from "../../../features/masters/party/partySlice";
 import { fetchPartyTypes } from "../../../features/masters/partyType/partyTypeSlice";

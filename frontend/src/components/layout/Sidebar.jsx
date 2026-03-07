@@ -63,7 +63,7 @@ const Sidebar = ({ onToggle }) => {
     // { text: "Payroll", icon: <PaymentIcon />, path: "/payroll" },
     // { text: "Assets", icon: <EngineeringIcon />, path: "/assets" },
     // { text: "Services", icon: <BuildIcon />, path: "/services" },
-    { text: "People and Finance", icon: <PeopleAltIcon />, path: "/party-finance" },
+    { text: "People", icon: <PeopleAltIcon />, path: "/party-finance" },
     { text: "Library", icon: <LibraryBooksIcon />, path: "/library" },
     // { text: "Setting", icon: <SettingsIcon />, path: "/setting" },
     // { text: "Help", icon: <HelpOutlineIcon />, path: "/help" }
