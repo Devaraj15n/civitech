@@ -1,15 +1,30 @@
 const base = require("../base.service");
 const {
     attendance_master: Attendance,
+    party_payroll_details: PartyPayroll
 } = require("../../models");
+
 const { Op } = require("sequelize");
 
 module.exports = {
 
     /* ================= CREATE ================= */
     create: async (data, user) => {
+
         if (!data.attendance_date) {
             throw new Error("Attendance date is required");
+        }
+
+        // Fetch payroll details for labour
+        const payroll = await PartyPayroll.findOne({
+            where: {
+                party_id: data.party_id,
+                status: 1
+            }
+        });
+
+        if (!payroll) {
+            throw new Error("Payroll not configured for this labour");
         }
 
         // Check if attendance already exists
@@ -23,7 +38,8 @@ module.exports = {
         });
 
         if (existing) {
-            // Update the existing record
+
+            // Update existing attendance
             return existing.update({
                 shift_count: data.shift_count ?? existing.shift_count,
                 overtime_hours: data.overtime_hours ?? existing.overtime_hours,
@@ -31,19 +47,29 @@ module.exports = {
                 status: data.status ?? existing.status,
                 updated_by: user.id,
             });
+
         }
 
-        // Otherwise create a new record
+        // Create new attendance with salary snapshot
         return base.create(Attendance)({
             project_id: data.project_id,
             party_id: data.party_id,
             attendance_date: data.attendance_date,
+
             shift_count: data.shift_count ?? 1,
             overtime_hours: data.overtime_hours ?? 0,
             attendance_status: data.attendance_status ?? "Present",
+
+            /* ===== Salary Snapshot ===== */
+            salary_amount: payroll.salary_amount,
+            salary_type: payroll.salary_type,
+            shift_hours: payroll.shift_hours,
+            overtime_rate: payroll.overtime_rate,
+
             status: data.status ?? 1,
             created_by: user.id,
         });
+
     },
 
     /* ================= FIND ALL ================= */
@@ -73,6 +99,7 @@ module.exports = {
             ],
             order: [["attendance_date", "DESC"]],
         });
+
     },
 
     /* ================= FIND BY ID ================= */
@@ -82,9 +109,10 @@ module.exports = {
     update: async (id, data, user) => {
 
         const record = await Attendance.findByPk(id);
+
         if (!record) throw new Error("Attendance not found");
 
-        // Duplicate check if changing date/project/party
+        // Prevent duplicate attendance
         if (data.project_id || data.party_id || data.attendance_date) {
 
             const existing = await Attendance.findOne({
@@ -100,6 +128,7 @@ module.exports = {
             if (existing) {
                 throw new Error("Attendance already exists for this date");
             }
+
         }
 
         return base.update(Attendance)(id, {
@@ -112,13 +141,17 @@ module.exports = {
             status: data.status ?? record.status,
             updated_by: user.id,
         });
+
     },
 
     /* ================= SOFT DELETE ================= */
     remove: async (id, user) => {
+
         return base.update(Attendance)(id, {
             status: 0,
             updated_by: user.id,
         });
+
     },
+
 };

@@ -15,6 +15,11 @@ import {
   TableRow,
   Paper,
   InputAdornment,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions
+
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
@@ -25,6 +30,7 @@ import { fetchProjectMembers } from "../../../features/projects/project_party/pr
 import { useParams } from "react-router-dom";
 import api from "../../../api/axios"; // your axios instance
 import { toast } from "react-toastify";
+import AttendancePopup from "./AttendancePopup";
 
 
 function ProjectAttendance() {
@@ -42,7 +48,14 @@ function ProjectAttendance() {
   const [attendanceStatus, setAttendanceStatus] = useState({}); // { [party_id]: status }
   const [attendanceRecords, setAttendanceRecords] = useState({});
 
-
+  const [openAttendancePopup, setOpenAttendancePopup] = useState(false);
+  const [selectedParty, setSelectedParty] = useState(null);
+  const [selectedAttendance, setSelectedAttendance] = useState(null);
+  const [attendanceAmount, setAttendanceAmount] = useState({});
+  const [attendanceData, setAttendanceData] = useState([]);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingStatus, setPendingStatus] = useState(null);
+  const [pendingPartyId, setPendingPartyId] = useState(null);
   const Options = ["Present", "Absent", "Week Off", "Paid Leave"];
 
   useEffect(() => {
@@ -50,49 +63,120 @@ function ProjectAttendance() {
       dispatch(fetchProjectMembers(projectId));
     }
   }, [projectId, dispatch]);
+  const fetchAttendance = async () => {
+    try {
+      const res = await api.get("/attendance", {
+        params: {
+          project_id: projectId,
+          from_date: attendanceDate.format("YYYY-MM-DD"),
+          to_date: attendanceDate.format("YYYY-MM-DD"),
+        },
+      });
+      setAttendanceData(res.data?.data || []);
+      const records = {};
+      const amounts = {};
 
+      res.data?.data?.forEach((att) => {
+
+        records[att.party_id] = att.attendance_status;
+
+        let amount = 0;
+
+        if (att.attendance_status === "Present") {
+
+          const base = Number(att.salary_amount) * Number(att.shift_count);
+          const ot = Number(att.overtime_hours) * Number(att.overtime_rate);
+
+          amount = base + ot;
+        }
+
+        if (att.attendance_status === "Paid Leave") {
+          amount = Number(att.salary_amount);
+        }
+
+        amounts[att.party_id] = amount;
+      });
+
+      setAttendanceAmount(amounts);
+
+      setAttendanceRecords(records);
+
+
+      // Reset manual selections when date changes
+      setAttendanceStatus({});
+    } catch (err) {
+      console.error("Error fetching attendance:", err);
+      setAttendanceRecords({});
+      setAttendanceStatus({});
+    }
+  };
 
   useEffect(() => {
-    const fetchAttendance = async () => {
-      try {
-        const res = await api.get("/attendance", {
-          params: {
-            project_id: projectId,
-            from_date: attendanceDate.format("YYYY-MM-DD"),
-            to_date: attendanceDate.format("YYYY-MM-DD"),
-          },
-        });
-
-        // Map attendance by party_id for quick access
-        const records = {};
-        res.data?.data?.forEach((att) => {
-          records[att.party_id] = att.attendance_status;
-        });
-
-        setAttendanceRecords(records);
-
-        // Reset manual selections when date changes
-        setAttendanceStatus({});
-      } catch (err) {
-        console.error("Error fetching attendance:", err);
-        setAttendanceRecords({});
-        setAttendanceStatus({});
-      }
-    };
-
     if (projectId && attendanceDate) fetchAttendance();
   }, [projectId, attendanceDate]);
 
   const handleStatusChange = (partyId, status) => {
+
+    const previousStatus =
+      attendanceStatus[partyId] ?? attendanceRecords[partyId] ?? null;
+
+    // prevent reopening popup if already Present
+    if (previousStatus === "Present" && status === "Present") {
+      return;
+    }
+
+    if (previousStatus === "Present" && status !== "Present") {
+      setPendingPartyId(partyId);
+      setPendingStatus(status);
+      setConfirmOpen(true);
+      return;
+    }
+
+    if (status === "Present") {
+
+      const existing = attendanceData?.find(
+        (a) => a.party_id === partyId
+      );
+
+      setSelectedParty(partyId);
+      setSelectedAttendance(existing || null);
+      setOpenAttendancePopup(true);
+    }
+
     setAttendanceStatus((prev) => ({
       ...prev,
-      [partyId]: status ?? null, // if cleared, store null
+      [partyId]: status ?? null,
     }));
+  };
+  const handleConfirmRemoveSalary = () => {
+
+    if (pendingPartyId) {
+      setAttendanceStatus((prev) => ({
+        ...prev,
+        [pendingPartyId]: pendingStatus,
+      }));
+
+      // reset amount immediately
+      setAttendanceAmount((prev) => ({
+        ...prev,
+        [pendingPartyId]: 0
+      }));
+    }
+
+
+    setConfirmOpen(false);
+    setPendingPartyId(null);
+    setPendingStatus(null);
   };
 
   const handleApplyAttendance = async (partyId) => {
     try {
       const status = attendanceStatus[partyId] ?? attendanceRecords[partyId] ?? null;
+
+      if (status === "Present") {
+        toast.info("Use popup to save Present attendance");
+        return;
+      }
 
       if (!status) {
         // If cleared, delete the record (or send empty status depending on your API)
@@ -194,6 +278,7 @@ function ProjectAttendance() {
           <TableHead>
             <TableRow sx={{ background: "#e8e9ed" }}>
               <TableCell><strong>Name</strong></TableCell>
+              <TableCell align="center"><strong>Daily Amount</strong></TableCell>
               <TableCell align="right"><strong>Attendance Status</strong></TableCell>
             </TableRow>
           </TableHead>
@@ -223,14 +308,17 @@ function ProjectAttendance() {
                 return (
                   <TableRow key={key}>
                     <TableCell>{member.party.party_name}</TableCell>
+                    <TableCell align="center">
+                      ₹{attendanceAmount[key] || 0}
+                    </TableCell>
                     <TableCell
                       sx={{ display: "flex", alignItems: "center", gap: 2 }}
                       align="right"
                     >
                       <Button
                         variant="contained"
-                        color="primary"
                         size="small"
+                        disabled={!attendanceStatus[key] && !attendanceRecords[key]}
                         onClick={() => handleApplyAttendance(key)}
                       >
                         Apply
@@ -271,6 +359,38 @@ function ProjectAttendance() {
         projectId={projectId}
         onAdded={() => dispatch(fetchProjectMembers(projectId))}
       />
+      <AttendancePopup
+        open={openAttendancePopup}
+        partyId={selectedParty}
+        attendance={selectedAttendance}
+        projectId={projectId}
+        attendanceDate={attendanceDate}
+        onSaved={() => {
+          fetchAttendance();
+        }}
+        onClose={() => setOpenAttendancePopup(false)}
+      />
+      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
+        <DialogTitle>Remove Salary?</DialogTitle>
+
+        <DialogContent>
+          <Typography>
+            Changing attendance will remove today's salary. Are you sure?
+          </Typography>
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={() => setConfirmOpen(false)}>Cancel</Button>
+
+          <Button
+            color="error"
+            variant="contained"
+            onClick={handleConfirmRemoveSalary}
+          >
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }

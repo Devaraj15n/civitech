@@ -6,6 +6,7 @@ router.use(auth);
 
 router.post("/", controller.create);
 router.get("/", controller.findAll);
+router.get("/party/:party_id", controller.findByPartyId);
 router.get("/:id", controller.findById);
 router.put("/:id", controller.update);
 router.delete("/:id", controller.remove);

@@ -5,11 +5,9 @@ const {
 } = require("../../models");
 
 module.exports = {
-
-    /* ================= CREATE ================= */
+    /* ================= CREATE / UPDATE ================= */
     create: async (data, user) => {
 
-        // Prevent duplicate payroll for same party
         const existing = await PartyPayroll.findOne({
             where: {
                 party_id: data.party_id,
@@ -17,10 +15,22 @@ module.exports = {
             },
         });
 
+        /* -------- If payroll exists → UPDATE -------- */
         if (existing) {
-            throw new Error("Payroll already exists for this party");
+
+            await existing.update({
+                salary_amount: data.salary_amount,
+                salary_type: data.salary_type || existing.salary_type,
+                shift_hours: data.shift_hours,
+                overtime_rate: data.overtime_rate,
+                cost_code_id: data.cost_code_id || null,
+                updated_by: user.id,
+            });
+
+            return existing;
         }
 
+        /* -------- If payroll not exists → CREATE -------- */
         return PartyPayroll.create({
             party_id: data.party_id,
             salary_amount: data.salary_amount,
@@ -44,7 +54,7 @@ module.exports = {
                 },
                 {
                     model: CostCode,
-                    attributes: ["id", "cost_code_name"],
+                    attributes: ["id", "name"],
                 },
             ],
             order: [["created_at", "DESC"]],
@@ -61,7 +71,7 @@ module.exports = {
                 },
                 {
                     model: CostCode,
-                    attributes: ["id", "cost_code_name"],
+                    attributes: ["id", "name"],
                 },
             ],
         });
@@ -97,5 +107,27 @@ module.exports = {
             status: 0,
             updated_by: user.id,
         });
+    },
+    /* ================= FIND BY FIELD ================= */
+    findByField: async (field, value) => {
+
+        const data = await PartyPayroll.findOne({
+            where: {
+                [field]: value,
+                status: 1,
+            },
+            include: [
+                {
+                    model: Party,
+                    attributes: ["id", "party_name"],
+                },
+                {
+                    model: CostCode,
+                    attributes: ["id", "name"],
+                },
+            ],
+        });
+
+    return data; // return null if not found
     },
 };

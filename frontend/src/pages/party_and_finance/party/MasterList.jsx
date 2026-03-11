@@ -9,11 +9,13 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import { useState } from "react";
 
+
 const MasterList = ({
   title,
   columns,
   rows,
   onAdd,
+  onAddSalary,
   onEdit,
   loading
 }) => {
@@ -37,20 +39,24 @@ const MasterList = ({
       {/* Header */}
       <Box display="flex" justifyContent="space-between" mb={2}>
         <Typography variant="h6">{title}</Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={onAdd}
-        >
-          Add Salary for Labours
-        </Button>   
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={onAdd}
-        >
-          Add
-        </Button>
+
+        <Box display="flex" gap={1}>
+          {/* <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => onAddSalary()}
+          >
+            Add Salary for Labours
+          </Button> */}
+
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={onAdd}
+          >
+            Add
+          </Button>
+        </Box>
       </Box>
 
       {/* Filters */}
@@ -61,19 +67,6 @@ const MasterList = ({
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-
-        {/* <TextField
-          size="small"
-          select
-          label="Status"
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-          sx={{ width: 150 }}
-        >
-          <MenuItem value="">All</MenuItem>
-          <MenuItem value="1">Active</MenuItem>
-          <MenuItem value="0">Inactive</MenuItem>
-        </TextField> */}
       </Box>
 
       {/* Grid */}
@@ -84,11 +77,26 @@ const MasterList = ({
           {
             field: "actions",
             headerName: "Actions",
-            width: 120,
+            width: 220,
             renderCell: (params) => (
-              <Button size="small" onClick={() => onEdit(params.row)}>
-                Edit
-              </Button>
+              <Box display="flex" gap={1}>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={() => onEdit(params.row)}
+                >
+                  Edit
+                </Button>
+
+                <Button
+                  size="small"
+                  variant="contained"
+                  color="secondary"
+                  onClick={() => onAddSalary(params.row)}
+                >
+                  Salary
+                </Button>
+              </Box>
             )
           }
         ]}

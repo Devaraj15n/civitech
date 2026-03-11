@@ -5,9 +5,13 @@ import PartyLibraryForm from "./PartyLibraryForm";
 import { fetchParties, saveParty } from "../../../features/masters/party/partySlice";
 import { fetchPartyTypes } from "../../../features/masters/partyType/partyTypeSlice";
 import { showSuccess, showError } from "../../../utils/toastHelper";
+import PartyPayrollDrawer from "./PartyPayrollDrawer";
+
 
 const PartyList = () => {
   const dispatch = useDispatch();
+  const [openDrawer, setOpenDrawer] = useState(false);
+  const [selectedParty, setSelectedParty] = useState(null);
 
   const { list: rows = [], loading = false } = useSelector((s) => s.party);
 
@@ -62,8 +66,8 @@ const PartyList = () => {
   }, [partyTypes]);
 
   useEffect(() => {
-  console.log("partyTypes from redux:", partyTypes);
-}, [partyTypes]);
+    console.log("partyTypes from redux:", partyTypes);
+  }, [partyTypes]);
 
   return (
     <>
@@ -81,9 +85,9 @@ const PartyList = () => {
             field: "party_type_id",
             headerName: "Party Type",
             flex: 1,
-            valueGetter: (params) => {
-              return partyTypeMap[params] || "-";;
-            },
+            valueGetter: ({ value }) => {
+              return partyTypeMap[value] || "-";
+            }
           },
           {
             field: "phone",
@@ -102,6 +106,10 @@ const PartyList = () => {
             renderCell: ({ row }) => (row.status === 1 ? "Active" : "Inactive"),
           },
         ]}
+        onAddSalary={(row) => {
+          setSelectedParty(row || null);
+          setOpenDrawer(true);
+        }}
         onAdd={() => {
           setEditData(null);
           setOpen(true);
@@ -118,6 +126,11 @@ const PartyList = () => {
         partyTypes={partyTypes}
         onClose={() => setOpen(false)}
         onSave={handleSave}
+      />
+      <PartyPayrollDrawer
+        open={openDrawer}
+        party={selectedParty}
+        onClose={() => setOpenDrawer(false)}
       />
     </>
   );

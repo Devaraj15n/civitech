@@ -1,4 +1,5 @@
 module.exports = (sequelize, DataTypes) => {
+
     const Attendance = sequelize.define(
         "attendance_master",
         {
@@ -24,13 +25,35 @@ module.exports = (sequelize, DataTypes) => {
             },
 
             shift_count: {
-                type: DataTypes.INTEGER,
+                type: DataTypes.DECIMAL(3,2),
                 defaultValue: 1,
             },
 
             overtime_hours: {
-                type: DataTypes.DECIMAL(5, 2),
+                type: DataTypes.DECIMAL(5,2),
                 defaultValue: 0,
+            },
+
+            /* ===== Salary Snapshot ===== */
+
+            salary_amount: {
+                type: DataTypes.DECIMAL(12,2),
+                allowNull: false,
+            },
+
+            salary_type: {
+                type: DataTypes.ENUM("Monthly","Daily","Per Shift"),
+                defaultValue: "Daily",
+            },
+
+            shift_hours: {
+                type: DataTypes.DECIMAL(5,2),
+                allowNull: true,
+            },
+
+            overtime_rate: {
+                type: DataTypes.DECIMAL(10,2),
+                allowNull: true,
             },
 
             attendance_status: {
@@ -64,6 +87,7 @@ module.exports = (sequelize, DataTypes) => {
             timestamps: true,
             createdAt: "created_at",
             updatedAt: "updated_at",
+
             indexes: [
                 {
                     unique: true,
@@ -72,11 +96,16 @@ module.exports = (sequelize, DataTypes) => {
             ],
         }
     );
-    
 
     Attendance.associate = (models) => {
-        Attendance.belongsTo(models.project_master, { foreignKey: "project_id" });
-        Attendance.belongsTo(models.party_master, { foreignKey: "party_id" });
+
+        Attendance.belongsTo(models.project_master, {
+            foreignKey: "project_id",
+        });
+
+        Attendance.belongsTo(models.party_master, {
+            foreignKey: "party_id",
+        });
 
         Attendance.belongsTo(models.user_master, {
             foreignKey: "created_by",
@@ -92,7 +121,7 @@ module.exports = (sequelize, DataTypes) => {
             foreignKey: "attendance_id",
             as: "shifts",
         });
-        
+
     };
 
     return Attendance;
